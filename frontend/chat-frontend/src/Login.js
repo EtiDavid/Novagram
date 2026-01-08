@@ -6,22 +6,21 @@ export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [pin, setPin] = useState("");
   const [room, setRoom] = useState("global");
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState(["global"]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
 
-    // ask backend for rooms
+  useEffect(() => {
     socket.emit("get_rooms");
 
-    // receive room list
     socket.on("rooms_list", list => {
-      setRooms(list);
+      const names = ["global", ...list.map(r => r.name)];
+      setRooms(names);
     });
 
     return () => socket.off("rooms_list");
-
   }, []);
+
 
   function submit() {
 
@@ -30,13 +29,21 @@ export default function Login({ onLogin }) {
     socket.emit("login", { username, pin });
 
     socket.once("login_success", user => {
-      onLogin({ ...user, room });
+
+      const loggedInUser = {
+        ...user,
+        room,
+        pin   // ⭐ store the PIN here
+      };
+
+      onLogin(loggedInUser);
     });
 
     socket.once("login_failed", msg => {
       setError(msg);
     });
   }
+
 
   return (
     <div style={{ padding: 20 }}>
@@ -55,13 +62,11 @@ export default function Login({ onLogin }) {
         onChange={e => setPin(e.target.value)}
       /><br /><br />
 
-      <label>Select Room:</label><br />
+      <label>Select room:</label><br />
 
       <select value={room} onChange={e => setRoom(e.target.value)}>
         {rooms.map(r => (
-          <option key={r.name} value={r.name}>
-            {r.name}
-          </option>
+          <option key={r} value={r}>{r}</option>
         ))}
       </select>
 

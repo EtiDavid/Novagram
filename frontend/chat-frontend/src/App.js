@@ -1,18 +1,28 @@
+// App.jsx
 import React, { useState } from "react";
 import Login from "./Login";
 import Chat from "./Chat";
-import { socket } from "./socket";
 
 export default function App() {
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("novagram_user");
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  function logout() {
-    socket.disconnect();
-    window.location.reload();
+  function handleLogin(u) {
+    localStorage.setItem("novagram_user", JSON.stringify(u));
+    setUser(u);
   }
 
-  if (!user) return <Login onLogin={setUser} />;
+  function handleLogout() {
+    localStorage.removeItem("novagram_user");
+    setUser(null);
+  }
 
-  return <Chat user={user} onLogout={logout} />;
+  return user ? (
+    <Chat user={user} onLogout={handleLogout} />
+  ) : (
+    <Login onLogin={handleLogin} />
+  );
 }

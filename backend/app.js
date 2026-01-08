@@ -1,3 +1,6 @@
+// ============================================
+// ENVIRONMENT LOADING
+// ============================================
 require("dotenv").config({
   path: `.env.${process.env.NODE_ENV || "development"}`
 });
@@ -13,17 +16,25 @@ const Room = require("./models/Room");
 const { logger, requestLogger } = require("./utils/logger");
 
 
-// ===================================================
-// IN-MEMORY SESSION TRACKING
-// ===================================================
-const userSessions = new Map();   // socket.id -> username
-const userSockets = new Map();    // username -> Set(socketIds)
-const joinedRooms = new Map();    // socket.id -> Set(roomNames)
+// ============================================
+// LOG ENVIRONMENT EARLY (VERY IMPORTANT)
+// ============================================
+logger.warn("ENVIRONMENT_BOOT", {
+  NODE_ENV: process.env.NODE_ENV,
+  LOADED_FROM: `.env.${process.env.NODE_ENV || "development"}`,
+  PORT: process.env.PORT,
+  LOG_LEVEL: process.env.LOG_LEVEL
+});
+
+logger.warn("DB_URI_SUMMARY", {
+  startsWith: process.env.MONGO_URI?.slice(0, 35) || "UNDEFINED",
+  endsWith: process.env.MONGO_URI?.slice(-12) || "UNDEFINED",
+});
 
 
-// ===================================================
+// ============================================
 // EXPRESS + SOCKET.IO
-// ===================================================
+// ============================================
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -36,27 +47,44 @@ const io = require("socket.io")(server, {
 });
 
 
-// ===================================================
-// DATABASE
-// ===================================================
+// ============================================
+// DATABASE CONNECTION
+// ============================================
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => logger.info("DB_CONNECTED", { db: mongoose.connection.name }))
-  .catch(err => logger.error("DB_CONNECTION_ERROR", { error: err.message }));
+  .then(() => {
+    logger.info("DB_CONNECTED", {
+      db: mongoose.connection.name,
+      host: mongoose.connection.host
+    });
+  })
+  .catch(err => {
+    logger.error("DB_CONNECTION_ERROR", {
+      error: err.message
+    });
+    process.exit(1);
+  });
 
 
-// ===================================================
-// HEALTH CHECK
-// ===================================================
+// ============================================
+// IN-MEMORY SESSION TRACKING
+// ============================================
+const userSessions = new Map();
+const userSockets = new Map();
+const joinedRooms = new Map();
+
+
+// ============================================
+// HEALTH ENDPOINT
+// ============================================
 app.get("/", (_, res) => res.json({ status: "ok" }));
 
 
-// ===================================================
+// ============================================
 // SOCKET LOGIC
-// ===================================================
+// ============================================
 io.on("connection", socket => {
 
   logger.info("SOCKET_CONNECTED", { socketId: socket.id });
-
 
   function requireLogin() {
     if (!socket.username) {
@@ -67,9 +95,7 @@ io.on("connection", socket => {
   }
 
 
-  // ===================================================
   // LOGIN
-  // ===================================================
   socket.on("login", async ({ username, pin }) => {
     try {
       const cleanName = username.trim().toLowerCase();
@@ -96,6 +122,7 @@ io.on("connection", socket => {
       if (!userSockets.has(cleanName)) {
         userSockets.set(cleanName, new Set());
       }
+
       userSockets.get(cleanName).add(socket.id);
       userSessions.set(socket.id, cleanName);
 
@@ -126,12 +153,19 @@ io.on("connection", socket => {
       socket.emit("login_failed", "Login error");
     }
   });
+// ===================================================
+// TYPING (ROOM-AWARE)
+// ===================================================
+socket.on("typing", room => {
+  if (!socket.username) return;
+
+  const target = room || "global";
+
+  io.to(target).emit("user_typing", socket.username);
+});
 
 
-
-  // ===================================================
   // SEND MESSAGE
-  // ===================================================
   socket.on("send_message", async ({ text, room }) => {
     if (!requireLogin()) return;
 
@@ -146,25 +180,20 @@ io.on("connection", socket => {
 
       logger.info("MESSAGE_SENT", {
         from: socket.username,
-        room: targetRoom,
-        textLength: text?.length || 0
+        room: targetRoom
       });
 
       io.to(targetRoom).emit("new_message", saved);
 
     } catch (err) {
       logger.error("MESSAGE_SAVE_ERROR", {
-        error: err.message,
-        room: targetRoom
+        error: err.message
       });
     }
   });
 
 
-
-  // ===================================================
-  // JOIN ROOM  (FIXED)
-  // ===================================================
+  // JOIN ROOM
   socket.on("join_room", async room => {
     if (!requireLogin()) return;
 
@@ -176,7 +205,6 @@ io.on("connection", socket => {
 
     const rooms = joinedRooms.get(socket.id);
 
-    // only join socket if new
     if (!rooms.has(cleanRoom)) {
       rooms.add(cleanRoom);
       socket.join(cleanRoom);
@@ -187,30 +215,12 @@ io.on("connection", socket => {
       });
     }
 
-    // ALWAYS fetch history
-    try {
-      const history = await Message.find({ room: cleanRoom }).sort({ createdAt: 1 });
-      socket.emit("chat_history", history);
-    } catch (err) {
-      logger.error("ROOM_HISTORY_ERROR", { error: err.message });
-    }
+    const history = await Message.find({ room: cleanRoom }).sort({ createdAt: 1 });
+    socket.emit("chat_history", history);
   });
 
 
-
-  // ===================================================
-  // TYPING
-  // ===================================================
-  socket.on("typing", () => {
-    if (!requireLogin()) return;
-    socket.broadcast.emit("user_typing", socket.username);
-  });
-
-
-
-  // ===================================================
-  // ADMIN — ROOMS
-  // ===================================================
+  // ADMIN
   socket.on("get_rooms", async () => {
     const rooms = await Room.find().sort({ name: 1 });
     socket.emit("rooms_list", rooms);
@@ -229,7 +239,6 @@ io.on("connection", socket => {
   });
 
 
-  // DELETE ROOM + MESSAGES (FIXED)
   socket.on("delete_room", async name => {
     const cleanName = name.trim().toLowerCase();
 
@@ -243,38 +252,38 @@ io.on("connection", socket => {
   });
 
 
-
-  // ===================================================
-  // ADMIN — USERS
-  // ===================================================
   socket.on("get_users", async () => {
     const users = await User.find().sort({ username: 1 });
+
+    logger.info("ADMIN_REQUESTED_USERS", { count: users.length });
+
     socket.emit("users_list", users);
   });
 
 
   socket.on("delete_user", async username => {
+    logger.info("ADMIN_DELETE_USER", { username });
+
     await User.deleteOne({ username });
 
-    logger.info("USER_DELETED", { username });
+    const users = await User.find().sort({ username: 1 });
 
-    io.emit("users_updated");
+    io.emit("users_list", users);
   });
 
 
   socket.on("reset_pin", async ({ username, newPin }) => {
+    logger.info("ADMIN_RESET_PIN", { username });
+
     await User.updateOne({ username }, { pin: newPin });
 
-    logger.info("USER_PIN_RESET", { username });
+    const users = await User.find().sort({ username: 1 });
 
-    io.emit("users_updated");
+    io.emit("users_list", users);
   });
 
 
-
-  // ===================================================
   // DISCONNECT
-  // ===================================================
   socket.on("disconnect", () => {
 
     const username = userSessions.get(socket.id);
@@ -308,14 +317,18 @@ io.on("connection", socket => {
 });
 
 
-// ===================================================
+// ============================================
 // START SERVER
-// ===================================================
+// ============================================
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, "0.0.0.0", () => {
   logger.info("SERVER_STARTED", {
     port: PORT,
-    env: process.env.NODE_ENV || "development"
+    env: process.env.NODE_ENV
   });
 });
+
+
+// EXPORT
+module.exports = { app, server };

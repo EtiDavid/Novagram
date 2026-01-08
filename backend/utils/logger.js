@@ -1,6 +1,7 @@
 // utils/logger.js
 const { createLogger, format, transports } = require("winston");
-const { v4: uuid } = require("uuid");
+const { randomUUID } = require("crypto");
+
 
 const env = process.env.NODE_ENV || "development";
 const baseLevel = env === "development" ? "debug" : "info";
@@ -31,7 +32,7 @@ const logger = createLogger({
 
 // Express middleware – adds correlation ID and logs incoming HTTP requests
 function requestLogger(req, res, next) {
-  const requestId = uuid();
+  const requestId = randomUUID();
   req.requestId = requestId;
 
   logger.info("HTTP_REQUEST", {
