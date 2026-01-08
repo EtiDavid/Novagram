@@ -1,0 +1,6 @@
+**/.env*
+Dockerfile
+.idea
+**/node_modules
+test
+**/.git*

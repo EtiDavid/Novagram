@@ -76,7 +76,10 @@ const joinedRooms = new Map();
 // ============================================
 // HEALTH ENDPOINT
 // ============================================
-app.get("/", (_, res) => res.json({ status: "ok" }));
+app.get("/health", (_, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 
 
 // ============================================
