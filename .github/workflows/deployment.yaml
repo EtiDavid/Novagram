@@ -6,8 +6,15 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
 
   workflow_dispatch:
+
+env:
+    BACKEND_IMAGE: novagram-backend
+    REGISTRY: docker.io
+
 
 
 jobs:
@@ -64,6 +71,81 @@ jobs:
 
      - name: Run tests
        run: npm test -- --runInBand #runtest one at a time, in-single process, in order
+
+ build-backend:
+   if: github.event_name == 'push'
+   needs: test-backend
+   runs-on: ubuntu-latest
+   defaults:
+     run:
+       working-directory: backend
+
+   outputs:
+     VERSION: ${{ steps.vars.outputs.VERSION }}
+     IS_RELEASE: ${{ steps.vars.outputs.IS_RELEASE }}
+
+   steps:
+     - name: get code
+       uses: actions/checkout@v4
+
+     - name: Setup Docker Buildx
+       uses: docker/setup-buildx-action@v3
+
+     - name: Login to Dockerhub
+       uses: docker/login-action@v3
+       with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+     - name: Detect version
+       id: vars
+       run: |
+         if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+           echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+           echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+
+         else
+           VERSION="dev-${GITHUB_SHA::7}" 
+           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+           echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+
+         fi
+
+     - name: Build image
+       run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} .
+
+     - name: Scan image with Trivy
+       uses: aquasecurity/trivy-action@0.20.0
+       with:
+        image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }}
+        severity: CRITICAL,HIGH
+        exit-code: 1
+        ignore-unfixed: true
+
+     - name: Tag images
+       run: |
+        IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}
+        VERSION=${{ steps.vars.outputs.VERSION }}
+           
+        docker tag $IMAGE:$VERSION $IMAGE:main
+           
+           if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+             docker tag $IMAGE:$VERSION $IMAGE:latest
+         fi
+
+     - name: Push images to registry
+       run: |
+           IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}
+           VERSION=${{ steps.vars.outputs.VERSION }}
+           
+           docker push $IMAGE:$VERSION
+           docker push $IMAGE:main
+           
+           if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+             docker push $IMAGE:latest
+           fi
+
 
 
 
