@@ -117,7 +117,7 @@ jobs:
          
 
      - name: Debug dependencies
-       run: docker run --rm davideti/novagram-backend:${{ steps.vars.outputs.VERSION }} npm list cross-spawn glob
+       run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} npm list cross-spawn glob
 
 
      - name: Scan image with Trivy
