@@ -35,7 +35,7 @@ beforeEach(async () => {
 // TEST 1 — HEALTH CHECK
 // ============================================
 test("health endpoint returns ok", async () => {
-  const res = await request(app).get("/");
+  const res = await request(app).get("/health");
 
   expect(res.status).toBe(200);
   expect(res.body.status).toBe("ok");
