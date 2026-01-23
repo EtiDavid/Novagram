@@ -20,7 +20,7 @@ env:
     BACKEND_IMAGE: novagram-backend
     REGISTRY: docker.io
     TASK_DEF_FILE_BACKEND: Novagram-backend.json
-    BACKEND_CONTAINER_NAME: novagram-backend
+    BACKEND_CONTAINER_NAME: novagram-backend-container
     SERVICE_NAME_BACKEND: Novagram-backend-td-service
     CLUSTER_NAME_BACKEND: novagram-backend-cluster
 
