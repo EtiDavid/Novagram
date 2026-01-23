@@ -14,6 +14,10 @@ on:
 env:
     BACKEND_IMAGE: novagram-backend
     REGISTRY: docker.io
+    TASK_DEF_FILE_BACKEND: Novagram-backend.json
+    BACKEND_CONTAINER_NAME: novagram-backend
+    SERVICE_NAME_BACKEND: Novagram-backend-td-service
+    CLUSTER_NAME_BACKEND: novagram-backend-cluster
 
 
 
@@ -116,8 +120,8 @@ jobs:
         docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} .
          
 
-     - name: Debug dependencies
-       run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} npm list cross-spawn glob
+     #- name: Debug dependencies
+       #run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} npm list cross-spawn glob
 
 
      - name: Scan image with Trivy
@@ -129,7 +133,7 @@ jobs:
         ignore-unfixed: true
         trivyignores: .trivyignore
 
-     - name: Tag images
+     - name: Tag image # tag image version to main if trigger is just push, tag to latest if trigger is version
        run: |
         IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}
         VERSION=${{ steps.vars.outputs.VERSION }}
@@ -151,8 +155,39 @@ jobs:
            if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
              docker push $IMAGE:latest
            fi
+         
+
+#CD
+ deploy-backend-aws:
+   needs: build-backend
+   runs-on: ubuntu-latest
+   if: ${{ needs.build-backend.outputs.IS_RELEASE == 'true' }}
+
+   steps:
+     - name: checkout code
+       uses: actions/checkout@v4
+
+     - name: Configure AWS credentials
+       uses: aws-actions/configure-aws-credentials@v4
+       with:
+         role-to-assume: arn:aws:iam::100067510402:role/github-actions-novagram-deployer
+         aws-region: eu-north-1
 
 
+     - name: Render new task definition for backend
+       id: backend_render
+       uses: aws-actions/amazon-ecs-render-task-definition@v1
+       with:
+         task-definition: ${{ env.TASK_DEF_FILE_BACKEND }}
+         container-name: ${{ env.BACKEND_CONTAINER_NAME }}
+         image: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-backend.outputs.VERSION }}
 
 
+     - name: Deploy backend to Amazon ECS service
+       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+       with:
+         task-definition: ${{ steps.backend_render.outputs.task-definition }}
+         service: ${{ env.SERVICE_NAME_BACKEND }}
+         cluster: ${{ env.CLUSTER_NAME_BACKEND }}
+         wait-for-service-stability: true
 

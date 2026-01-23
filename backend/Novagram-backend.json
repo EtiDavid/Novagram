@@ -1,0 +1,112 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:eu-north-1:100067510402:task-definition/Novagram-backend-td:9",
+    "containerDefinitions": [
+        {
+            "name": "novagram-backend-container",
+            "image": "100067510402.dkr.ecr.eu-north-1.amazonaws.com/novagram-backend@sha256:d72e786d458d2b6e879390ac6cc0060485a546ec5e131936ba5079bf21bde9b8",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "name": "novagram-backend",
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "LOG_LEVEL",
+                    "value": "info"
+                },
+                {
+                    "name": "NODE_ENV",
+                    "value": "production"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "MONGO_URI",
+                    "valueFrom": "arn:aws:secretsmanager:eu-north-1:100067510402:secret:novagram/mongo-uri-Kjkuga:MONGO_URI::"
+                }
+            ],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/Novagram-backend-td",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "Novagram-backend-td",
+    "taskRoleArn": "arn:aws:iam::100067510402:role/ecsTaskRole-novagram",
+    "executionRoleArn": "arn:aws:iam::100067510402:role/ecsTaskExecutionRole-novagram",
+    "networkMode": "awsvpc",
+    "revision": 9,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.secrets.asm.environment-variables"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE",
+        "MANAGED_INSTANCES"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2026-01-23T15:07:50.837Z",
+    "registeredBy": "arn:aws:iam::100067510402:root",
+    "enableFaultInjection": false,
+    "tags": []
+}
