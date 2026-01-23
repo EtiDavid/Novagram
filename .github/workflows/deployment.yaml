@@ -149,6 +149,21 @@ jobs:
              docker tag $IMAGE:$VERSION $IMAGE:latest
          fi
 
+     - name: Enforce immutable release tags (Docker Hub)
+       if: steps.vars.outputs.IS_RELEASE == 'true'
+       run: |
+         IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}"
+         TAG="${{ steps.vars.outputs.VERSION }}"
+
+         echo "Checking if $IMAGE:$TAG already exists..."
+
+         if docker manifest inspect "$IMAGE:$TAG" > /dev/null 2>&1; then
+           echo "::error::Release tag $TAG already exists in Docker Hub. Release tags are immutable."
+           exit 1
+         fi
+
+         echo "Tag $TAG does not exist. Safe to release."
+
      - name: Push images to registry
        run: |
            IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}
@@ -166,6 +181,7 @@ jobs:
  deploy-backend-aws:
    needs: build-backend
    runs-on: ubuntu-latest
+   environment: production
    if: ${{ needs.build-backend.outputs.IS_RELEASE == 'true' }}
 
    steps:
