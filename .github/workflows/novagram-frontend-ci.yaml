@@ -92,7 +92,7 @@ jobs:
       - name: build docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} \
-          --build-arg REACT_APP_API_URL=novagram-LB-2022053290.eu-north-1.elb.amazonaws.com \
+          --build-arg REACT_APP_API_URL=http://novagram-LB-2022053290.eu-north-1.elb.amazonaws.com \
           .
 
       - name: Scan image with Trivy
