@@ -1,0 +1,145 @@
+name: Novagram frontend
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  FRONTEND_IMAGE: novagram-frontend
+  TASK_DEF_FILE_FRONTEND: Novagram-frontend.json
+  FRONTEND_CONTAINER_NAME: novagram-frontend-container
+  SERVICE_NAME_FRONTEND: Novagram-frontend-td-service
+  CLUSTER_NAME_FRONTEND: novagram-frontend-cluster
+
+jobs:
+  Build-artifact:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+    steps:
+      - name: get code
+        uses: actions/checkout@v4
+
+      - name: set-up node
+        uses: actions/setup-node@v5
+        with:
+         node-version: "20"
+         cache: "npm"
+         cache-dependency-path:  frontend/chat-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: build-artifact
+        run: npm run build
+
+      - name: upload- artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-files
+          path: frontend/chat-frontend/build
+
+  Build-frontend:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: Build-artifact
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+
+    outputs:
+      VERSION: ${{ steps.vars.outputs.VERSION }}
+      IS_RELEASE: ${{ steps.vars.outputs.IS_RELEASE }}
+    steps:
+      - name: get code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Detect version
+        id: vars
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+        
+          else
+            VERSION="dev-${GITHUB_SHA::7}" 
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+        
+          fi
+
+      - name: build docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} \
+          --build-arg REACT_APP_API_URL=novagram-LB-2022053290.eu-north-1.elb.amazonaws.com \
+          .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }}
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+
+      - name: tag docker image
+        run: |
+          IMAGE= ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
+          VERSION= ${{ steps.vars.outputs.VERSION }}
+          
+          docker tag $IMAGE:$VERSION $IMAGE:main
+          
+          if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+          docker tag $IMAGE:$VERSION $IMAGE:latest
+          fi
+
+      - name: Enforce immutable release tags
+        if: steps.vars.outputs.IS_RELEASE == 'true'
+        run: |
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}"
+          TAG="${{ steps.vars.outputs.VERSION }}"
+
+          echo "Checking if $IMAGE:$TAG already exists..."
+
+          if docker manifest inspect "$IMAGE:$TAG" > /dev/null 2>&1; then
+            echo "::error::Release tag $TAG already exists in Docker Hub. Release tags are immutable."
+            exit 1
+          fi
+
+          echo "Tag $TAG does not exist. Safe to release."
+
+      - name: Push images to registry
+        run: |
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
+          VERSION=${{ steps.vars.outputs.VERSION }}
+          
+          docker push $IMAGE:$VERSION
+          docker push $IMAGE:main
+          
+          if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+            docker push $IMAGE:latest
+          fi
+          
+  
