@@ -107,8 +107,8 @@ jobs:
         run: docker images
       - name: tag docker image
         run: |
-          IMAGE= ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
-          VERSION= ${{ steps.vars.outputs.VERSION }}
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
+          VERSION=${{ steps.vars.outputs.VERSION }}
           
       
           docker tag $IMAGE:$VERSION $IMAGE:main
