@@ -103,13 +103,14 @@ jobs:
           exit-code: 1
           ignore-unfixed: true
           trivyignores: .trivyignore
-
+      - name: debug
+        run: docker images
       - name: tag docker image
         run: |
           IMAGE= ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
           VERSION= ${{ steps.vars.outputs.VERSION }}
           
-          docker images 
+      
           docker tag $IMAGE:$VERSION $IMAGE:main
           
           if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
