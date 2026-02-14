@@ -1,0 +1,12 @@
+.env.staging
+Dockerfile
+.idea
+**/node_modules
+test
+**/.git*
+/build
+node_modules
+build
+.git
+.gitignore
+.env*

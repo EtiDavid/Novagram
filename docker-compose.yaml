@@ -25,11 +25,13 @@ services:
       context: ./frontend/chat-frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL: http://backend:5000
-    image: novalite/novagram-frontend
+        REACT_APP_API_URL:
+           http://novagram-alb-861956009.eu-north-1.elb.amazonaws.com
+    image: davidchimere/novagram-frontend
     ports:
-      - "8080:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
+      - "80:80"
+
+#    depends_on:
+#      backend:
+#        condition: service_healthy
+#    restart: unless-stopped

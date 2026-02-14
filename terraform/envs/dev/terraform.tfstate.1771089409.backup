@@ -1,0 +1,1953 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.4",
+  "serial": 94,
+  "lineage": "550efb45-7a1f-6440-1eca-d7ce0a2ba1e5",
+  "outputs": {
+    "dns": {
+      "value": "novagram-alb-861956009.eu-north-1.elb.amazonaws.com",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "module": "module.backend_ecs_service",
+      "mode": "managed",
+      "type": "aws_ecs_service",
+      "name": "ecs_service",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "alarms": [],
+            "arn": "arn:aws:ecs:eu-north-1:770646238400:service/novagram-cluster/novagram-backend-service",
+            "availability_zone_rebalancing": "ENABLED",
+            "capacity_provider_strategy": [
+              {
+                "base": 0,
+                "capacity_provider": "FARGATE",
+                "weight": 1
+              }
+            ],
+            "cluster": "arn:aws:ecs:eu-north-1:770646238400:cluster/novagram-cluster",
+            "deployment_circuit_breaker": [
+              {
+                "enable": true,
+                "rollback": true
+              }
+            ],
+            "deployment_configuration": [
+              {
+                "bake_time_in_minutes": "0",
+                "canary_configuration": [],
+                "lifecycle_hook": [],
+                "linear_configuration": [],
+                "strategy": "ROLLING"
+              }
+            ],
+            "deployment_controller": [
+              {
+                "type": "ECS"
+              }
+            ],
+            "deployment_maximum_percent": 200,
+            "deployment_minimum_healthy_percent": 100,
+            "desired_count": 2,
+            "enable_ecs_managed_tags": false,
+            "enable_execute_command": false,
+            "force_delete": null,
+            "force_new_deployment": null,
+            "health_check_grace_period_seconds": 0,
+            "iam_role": "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "id": "arn:aws:ecs:eu-north-1:770646238400:service/novagram-cluster/novagram-backend-service",
+            "launch_type": "",
+            "load_balancer": [
+              {
+                "advanced_configuration": [],
+                "container_name": "novagram-backend-container",
+                "container_port": 5000,
+                "elb_name": "",
+                "target_group_arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-lb-tg/ac47cee0e4c80a62"
+              }
+            ],
+            "name": "novagram-backend-service",
+            "network_configuration": [
+              {
+                "assign_public_ip": true,
+                "security_groups": [
+                  "sg-0afc7773138fc2884"
+                ],
+                "subnets": [
+                  "subnet-017fe7d536d61e21e",
+                  "subnet-08a0708fffa500732"
+                ]
+              }
+            ],
+            "ordered_placement_strategy": [],
+            "placement_constraints": [],
+            "platform_version": "LATEST",
+            "propagate_tags": "NONE",
+            "region": "eu-north-1",
+            "scheduling_strategy": "REPLICA",
+            "service_connect_configuration": [],
+            "service_registries": [],
+            "sigint_rollback": null,
+            "tags": {
+              "Name": "novagram-backend-service"
+            },
+            "tags_all": {
+              "Name": "novagram-backend-service"
+            },
+            "task_definition": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-backend-task-definition:1",
+            "timeouts": null,
+            "triggers": {},
+            "volume_configuration": [],
+            "vpc_lattice_configurations": [],
+            "wait_for_steady_state": true
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.backend_target_group.aws_lb_target_group.novagram_tg",
+            "module.backend_task_definition.aws_ecs_task_definition.task_definition",
+            "module.ecs_cluster.aws_ecs_cluster.novagram_ecs_cluster",
+            "module.frontend_target_group.aws_lb_target_group.novagram_tg",
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role",
+            "module.iam_task_role.aws_iam_role.task_role",
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.load_balancers.aws_lb.novagram_alb",
+            "module.load_balancers.aws_lb_listener.front_end",
+            "module.load_balancers.aws_lb_listener.http",
+            "module.load_balancers.aws_lb_listener_rule.backend_rule",
+            "module.log_group.aws_cloudwatch_log_group.service_logs",
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current",
+            "module.security_groups.aws_security_group.alb_security_group",
+            "module.security_groups.aws_security_group.backend_security_group"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.backend_target_group",
+      "mode": "managed",
+      "type": "aws_lb_target_group",
+      "name": "novagram_tg",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-backend-lb-tg/844a6ed54825f81e",
+            "arn_suffix": "targetgroup/novagram-backend-lb-tg/844a6ed54825f81e",
+            "connection_termination": null,
+            "deregistration_delay": "300",
+            "health_check": [
+              {
+                "enabled": true,
+                "healthy_threshold": 3,
+                "interval": 30,
+                "matcher": "200",
+                "path": "/health",
+                "port": "traffic-port",
+                "protocol": "HTTP",
+                "timeout": 5,
+                "unhealthy_threshold": 3
+              }
+            ],
+            "id": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-backend-lb-tg/844a6ed54825f81e",
+            "ip_address_type": "ipv4",
+            "lambda_multi_value_headers_enabled": false,
+            "load_balancer_arns": [],
+            "load_balancing_algorithm_type": "round_robin",
+            "load_balancing_anomaly_mitigation": "off",
+            "load_balancing_cross_zone_enabled": "use_load_balancer_configuration",
+            "name": "novagram-backend-lb-tg",
+            "name_prefix": "",
+            "port": 5000,
+            "preserve_client_ip": null,
+            "protocol": "HTTP",
+            "protocol_version": "HTTP1",
+            "proxy_protocol_v2": false,
+            "region": "eu-north-1",
+            "slow_start": 0,
+            "stickiness": [
+              {
+                "cookie_duration": 86400,
+                "cookie_name": "",
+                "enabled": false,
+                "type": "lb_cookie"
+              }
+            ],
+            "tags": {},
+            "tags_all": {},
+            "target_control_port": 0,
+            "target_failover": [
+              {
+                "on_deregistration": null,
+                "on_unhealthy": null
+              }
+            ],
+            "target_group_health": [
+              {
+                "dns_failover": [
+                  {
+                    "minimum_healthy_targets_count": "1",
+                    "minimum_healthy_targets_percentage": "off"
+                  }
+                ],
+                "unhealthy_state_routing": [
+                  {
+                    "minimum_healthy_targets_count": 1,
+                    "minimum_healthy_targets_percentage": "off"
+                  }
+                ]
+              }
+            ],
+            "target_health_state": [
+              {
+                "enable_unhealthy_connection_termination": null,
+                "unhealthy_draining_interval": null
+              }
+            ],
+            "target_type": "ip",
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-backend-lb-tg/844a6ed54825f81e"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.backend_task_definition",
+      "mode": "managed",
+      "type": "aws_ecs_task_definition",
+      "name": "task_definition",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-backend-task-definition:2",
+            "arn_without_revision": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-backend-task-definition",
+            "container_definitions": "[{\"cpu\":512,\"environment\":[{\"name\":\"NODE_ENV\",\"value\":\"production\"},{\"name\":\"PORT\",\"value\":\"5000\"}],\"essential\":true,\"image\":\"davidchimere/novagram-backend:latest\",\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-stream-prefix\":\"ecs\",\"awslogs-group\":\"/ecs/novagram/backend\",\"awslogs-region\":\"eu-north-1\"}},\"memory\":1024,\"mountPoints\":[],\"name\":\"novagram-backend-container\",\"portMappings\":[{\"containerPort\":5000,\"hostPort\":5000,\"protocol\":\"tcp\"}],\"secrets\":[{\"name\":\"MONGO_URI\",\"valueFrom\":\"arn:aws:secretsmanager:eu-north-1:770646238400:secret:novagram/mongo-uri-K0lNAY:MONGO_URI::\"}],\"systemControls\":[],\"volumesFrom\":[]}]",
+            "cpu": "512",
+            "enable_fault_injection": false,
+            "ephemeral_storage": [],
+            "execution_role_arn": "arn:aws:iam::770646238400:role/novagram-task-execution-role",
+            "family": "novagram-backend-task-definition",
+            "id": "novagram-backend-task-definition",
+            "ipc_mode": "",
+            "memory": "1024",
+            "network_mode": "awsvpc",
+            "pid_mode": "",
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "region": "eu-north-1",
+            "requires_compatibilities": [
+              "FARGATE"
+            ],
+            "revision": 2,
+            "runtime_platform": [
+              {
+                "cpu_architecture": "X86_64",
+                "operating_system_family": "LINUX"
+              }
+            ],
+            "skip_destroy": false,
+            "tags": {},
+            "tags_all": {},
+            "task_role_arn": "arn:aws:iam::770646238400:role/novagram-backend-task-role",
+            "track_latest": false,
+            "volume": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role",
+            "module.iam_task_role.aws_iam_role.task_role",
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.log_group.aws_cloudwatch_log_group.service_logs",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.ecs_cluster",
+      "mode": "managed",
+      "type": "aws_ecs_cluster",
+      "name": "novagram_ecs_cluster",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ecs:eu-north-1:770646238400:cluster/novagram-cluster",
+            "configuration": [],
+            "id": "arn:aws:ecs:eu-north-1:770646238400:cluster/novagram-cluster",
+            "name": "novagram-cluster",
+            "region": "eu-north-1",
+            "service_connect_defaults": [],
+            "setting": [
+              {
+                "name": "containerInsights",
+                "value": "enabled"
+              }
+            ],
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.frontend_ecs_service",
+      "mode": "managed",
+      "type": "aws_ecs_service",
+      "name": "ecs_service",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "alarms": [],
+            "arn": "arn:aws:ecs:eu-north-1:770646238400:service/novagram-cluster/novagram-frontend-service",
+            "availability_zone_rebalancing": "ENABLED",
+            "capacity_provider_strategy": [
+              {
+                "base": 0,
+                "capacity_provider": "FARGATE",
+                "weight": 1
+              }
+            ],
+            "cluster": "arn:aws:ecs:eu-north-1:770646238400:cluster/novagram-cluster",
+            "deployment_circuit_breaker": [
+              {
+                "enable": true,
+                "rollback": true
+              }
+            ],
+            "deployment_configuration": [
+              {
+                "bake_time_in_minutes": "0",
+                "canary_configuration": [],
+                "lifecycle_hook": [],
+                "linear_configuration": [],
+                "strategy": "ROLLING"
+              }
+            ],
+            "deployment_controller": [
+              {
+                "type": "ECS"
+              }
+            ],
+            "deployment_maximum_percent": 200,
+            "deployment_minimum_healthy_percent": 100,
+            "desired_count": 1,
+            "enable_ecs_managed_tags": false,
+            "enable_execute_command": false,
+            "force_delete": null,
+            "force_new_deployment": null,
+            "health_check_grace_period_seconds": 0,
+            "iam_role": "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "id": "arn:aws:ecs:eu-north-1:770646238400:service/novagram-cluster/novagram-frontend-service",
+            "launch_type": "",
+            "load_balancer": [
+              {
+                "advanced_configuration": [],
+                "container_name": "novagram-frontend-container",
+                "container_port": 80,
+                "elb_name": "",
+                "target_group_arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59"
+              }
+            ],
+            "name": "novagram-frontend-service",
+            "network_configuration": [
+              {
+                "assign_public_ip": true,
+                "security_groups": [
+                  "sg-095ed663c22f4cf42"
+                ],
+                "subnets": [
+                  "subnet-017fe7d536d61e21e",
+                  "subnet-08a0708fffa500732"
+                ]
+              }
+            ],
+            "ordered_placement_strategy": [],
+            "placement_constraints": [],
+            "platform_version": "LATEST",
+            "propagate_tags": "NONE",
+            "region": "eu-north-1",
+            "scheduling_strategy": "REPLICA",
+            "service_connect_configuration": [],
+            "service_registries": [],
+            "sigint_rollback": null,
+            "tags": {
+              "Name": "novagram-frontend-service"
+            },
+            "tags_all": {
+              "Name": "novagram-frontend-service"
+            },
+            "task_definition": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-frontend-task-definition:1",
+            "timeouts": null,
+            "triggers": {},
+            "volume_configuration": [],
+            "vpc_lattice_configurations": [],
+            "wait_for_steady_state": true
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.backend_target_group.aws_lb_target_group.novagram_tg",
+            "module.ecs_cluster.aws_ecs_cluster.novagram_ecs_cluster",
+            "module.frontend_target_group.aws_lb_target_group.novagram_tg",
+            "module.frontend_task_definition.aws_ecs_task_definition.task_definition",
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role",
+            "module.iam_task_role.aws_iam_role.task_role",
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.load_balancers.aws_lb.novagram_alb",
+            "module.load_balancers.aws_lb_listener.front_end",
+            "module.load_balancers.aws_lb_listener.http",
+            "module.load_balancers.aws_lb_listener_rule.backend_rule",
+            "module.log_group.aws_cloudwatch_log_group.service_logs",
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current",
+            "module.security_groups.aws_security_group.alb_security_group",
+            "module.security_groups.aws_security_group.frontend_security_group"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.frontend_target_group",
+      "mode": "managed",
+      "type": "aws_lb_target_group",
+      "name": "novagram_tg",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59",
+            "arn_suffix": "targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59",
+            "connection_termination": null,
+            "deregistration_delay": "300",
+            "health_check": [
+              {
+                "enabled": true,
+                "healthy_threshold": 3,
+                "interval": 30,
+                "matcher": "200",
+                "path": "/",
+                "port": "traffic-port",
+                "protocol": "HTTP",
+                "timeout": 5,
+                "unhealthy_threshold": 3
+              }
+            ],
+            "id": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59",
+            "ip_address_type": "ipv4",
+            "lambda_multi_value_headers_enabled": false,
+            "load_balancer_arns": [
+              "arn:aws:elasticloadbalancing:eu-north-1:770646238400:loadbalancer/app/novagram-alb/a01debf375070e29"
+            ],
+            "load_balancing_algorithm_type": "round_robin",
+            "load_balancing_anomaly_mitigation": "off",
+            "load_balancing_cross_zone_enabled": "use_load_balancer_configuration",
+            "name": "novagram-frontend-lb-tg",
+            "name_prefix": "",
+            "port": 80,
+            "preserve_client_ip": null,
+            "protocol": "HTTP",
+            "protocol_version": "HTTP1",
+            "proxy_protocol_v2": false,
+            "region": "eu-north-1",
+            "slow_start": 0,
+            "stickiness": [
+              {
+                "cookie_duration": 86400,
+                "cookie_name": "",
+                "enabled": false,
+                "type": "lb_cookie"
+              }
+            ],
+            "tags": {},
+            "tags_all": {},
+            "target_control_port": 0,
+            "target_failover": [
+              {
+                "on_deregistration": null,
+                "on_unhealthy": null
+              }
+            ],
+            "target_group_health": [
+              {
+                "dns_failover": [
+                  {
+                    "minimum_healthy_targets_count": "1",
+                    "minimum_healthy_targets_percentage": "off"
+                  }
+                ],
+                "unhealthy_state_routing": [
+                  {
+                    "minimum_healthy_targets_count": 1,
+                    "minimum_healthy_targets_percentage": "off"
+                  }
+                ]
+              }
+            ],
+            "target_health_state": [
+              {
+                "enable_unhealthy_connection_termination": null,
+                "unhealthy_draining_interval": null
+              }
+            ],
+            "target_type": "ip",
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.frontend_task_definition",
+      "mode": "managed",
+      "type": "aws_ecs_task_definition",
+      "name": "task_definition",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-frontend-task-definition:1",
+            "arn_without_revision": "arn:aws:ecs:eu-north-1:770646238400:task-definition/novagram-frontend-task-definition",
+            "container_definitions": "[{\"cpu\":512,\"environment\":[],\"essential\":true,\"image\":\"davidchimere/novagram-frontend:latest\",\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-region\":\"eu-north-1\",\"awslogs-stream-prefix\":\"ecs\",\"awslogs-group\":\"/ecs/novagram/frontend\"}},\"memory\":1024,\"mountPoints\":[],\"name\":\"novagram-frontend-container\",\"portMappings\":[{\"containerPort\":80,\"hostPort\":80,\"protocol\":\"tcp\"}],\"secrets\":[],\"systemControls\":[],\"volumesFrom\":[]}]",
+            "cpu": "512",
+            "enable_fault_injection": false,
+            "ephemeral_storage": [],
+            "execution_role_arn": "arn:aws:iam::770646238400:role/novagram-task-execution-role",
+            "family": "novagram-frontend-task-definition",
+            "id": "novagram-frontend-task-definition",
+            "ipc_mode": "",
+            "memory": "1024",
+            "network_mode": "awsvpc",
+            "pid_mode": "",
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "region": "eu-north-1",
+            "requires_compatibilities": [
+              "FARGATE"
+            ],
+            "revision": 1,
+            "runtime_platform": [
+              {
+                "cpu_architecture": "X86_64",
+                "operating_system_family": "LINUX"
+              }
+            ],
+            "skip_destroy": false,
+            "tags": {},
+            "tags_all": {},
+            "task_role_arn": "arn:aws:iam::770646238400:role/novagram-frontend-task-role",
+            "track_latest": false,
+            "volume": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role",
+            "module.iam_task_role.aws_iam_role.task_role",
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.log_group.aws_cloudwatch_log_group.service_logs",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.iam_execution_role",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "assume_role",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "1077804475",
+            "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"ecs-tasks.amazonaws.com\"\n      }\n    }\n  ]\n}",
+            "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"sts:AssumeRole\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}]}",
+            "override_json": null,
+            "override_policy_documents": null,
+            "policy_id": null,
+            "source_json": null,
+            "source_policy_documents": null,
+            "statement": [
+              {
+                "actions": [
+                  "sts:AssumeRole"
+                ],
+                "condition": [],
+                "effect": "Allow",
+                "not_actions": [],
+                "not_principals": [],
+                "not_resources": [],
+                "principals": [
+                  {
+                    "identifiers": [
+                      "ecs-tasks.amazonaws.com"
+                    ],
+                    "type": "Service"
+                  }
+                ],
+                "resources": [],
+                "sid": ""
+              }
+            ],
+            "version": "2012-10-17"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.iam_execution_role",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "task_execution_role",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::770646238400:role/novagram-task-execution-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-02-13T10:14:48Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "novagram-task-execution-role",
+            "inline_policy": [],
+            "managed_policy_arns": [
+              "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+              "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+            ],
+            "max_session_duration": 3600,
+            "name": "novagram-task-execution-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROA3G3QYMTAPQCLZLHCI"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "name": "novagram-task-execution-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.iam_execution_role",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "execution_role_secrets",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "novagram-task-execution-role/arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "policy_arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "role": "novagram-task-execution-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "policy_arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "role": "novagram-task-execution-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.iam_execution_role",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "task_execution_role_policy",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "novagram-task-execution-role/arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+            "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+            "role": "novagram-task-execution-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+            "role": "novagram-task-execution-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_execution_role.aws_iam_role.task_execution_role",
+            "module.iam_execution_role.data.aws_iam_policy_document.assume_role"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.iam_task_role",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "task_assume_role",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "1077804475",
+            "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"ecs-tasks.amazonaws.com\"\n      }\n    }\n  ]\n}",
+            "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"sts:AssumeRole\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}]}",
+            "override_json": null,
+            "override_policy_documents": null,
+            "policy_id": null,
+            "source_json": null,
+            "source_policy_documents": null,
+            "statement": [
+              {
+                "actions": [
+                  "sts:AssumeRole"
+                ],
+                "condition": [],
+                "effect": "Allow",
+                "not_actions": [],
+                "not_principals": [],
+                "not_resources": [],
+                "principals": [
+                  {
+                    "identifiers": [
+                      "ecs-tasks.amazonaws.com"
+                    ],
+                    "type": "Service"
+                  }
+                ],
+                "resources": [],
+                "sid": ""
+              }
+            ],
+            "version": "2012-10-17"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.iam_task_role",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "task_role",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "backend",
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::770646238400:role/novagram-backend-task-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-02-14T14:56:29Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "novagram-backend-task-role",
+            "inline_policy": [],
+            "managed_policy_arns": [
+              "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy"
+            ],
+            "max_session_duration": 3600,
+            "name": "novagram-backend-task-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROA3G3QYMTAPIVWJAGR2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "name": "novagram-backend-task-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        },
+        {
+          "index_key": "frontend",
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::770646238400:role/novagram-frontend-task-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-02-14T13:56:21Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "novagram-frontend-task-role",
+            "inline_policy": [],
+            "managed_policy_arns": [],
+            "max_session_duration": 3600,
+            "name": "novagram-frontend-task-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROA3G3QYMTALHW2ZNABT"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "name": "novagram-frontend-task-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.iam_task_role",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "task_role_policies",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "backend-0",
+          "schema_version": 0,
+          "attributes": {
+            "id": "novagram-backend-task-role/arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "policy_arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "role": "novagram-backend-task-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "policy_arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "role": "novagram-backend-task-role"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam_task_role.aws_iam_role.task_role",
+            "module.iam_task_role.data.aws_iam_policy_document.task_assume_role",
+            "module.policies.aws_iam_policy.backend_secrets_policy",
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.load_balancers",
+      "mode": "managed",
+      "type": "aws_lb",
+      "name": "novagram_alb",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_logs": [
+              {
+                "bucket": "",
+                "enabled": false,
+                "prefix": ""
+              }
+            ],
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:loadbalancer/app/novagram-alb/a01debf375070e29",
+            "arn_suffix": "app/novagram-alb/a01debf375070e29",
+            "client_keep_alive": 3600,
+            "connection_logs": [
+              {
+                "bucket": "",
+                "enabled": false,
+                "prefix": ""
+              }
+            ],
+            "customer_owned_ipv4_pool": "",
+            "desync_mitigation_mode": "defensive",
+            "dns_name": "novagram-alb-861956009.eu-north-1.elb.amazonaws.com",
+            "dns_record_client_routing_policy": null,
+            "drop_invalid_header_fields": false,
+            "enable_cross_zone_load_balancing": true,
+            "enable_deletion_protection": false,
+            "enable_http2": true,
+            "enable_tls_version_and_cipher_suite_headers": false,
+            "enable_waf_fail_open": false,
+            "enable_xff_client_port": false,
+            "enable_zonal_shift": false,
+            "enforce_security_group_inbound_rules_on_private_link_traffic": "",
+            "health_check_logs": [
+              {
+                "bucket": "",
+                "enabled": false,
+                "prefix": ""
+              }
+            ],
+            "id": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:loadbalancer/app/novagram-alb/a01debf375070e29",
+            "idle_timeout": 60,
+            "internal": false,
+            "ip_address_type": "ipv4",
+            "ipam_pools": [],
+            "load_balancer_type": "application",
+            "minimum_load_balancer_capacity": [],
+            "name": "novagram-alb",
+            "name_prefix": "",
+            "preserve_host_header": false,
+            "region": "eu-north-1",
+            "secondary_ips_auto_assigned_per_subnet": null,
+            "security_groups": [
+              "sg-057e282ca1a0dec43"
+            ],
+            "subnet_mapping": [
+              {
+                "allocation_id": "",
+                "ipv6_address": "",
+                "outpost_id": "",
+                "private_ipv4_address": "",
+                "subnet_id": "subnet-017fe7d536d61e21e"
+              },
+              {
+                "allocation_id": "",
+                "ipv6_address": "",
+                "outpost_id": "",
+                "private_ipv4_address": "",
+                "subnet_id": "subnet-08a0708fffa500732"
+              }
+            ],
+            "subnets": [
+              "subnet-017fe7d536d61e21e",
+              "subnet-08a0708fffa500732"
+            ],
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf",
+            "xff_header_processing_mode": "append",
+            "zone_id": "Z23TAZ6LKFMNIO"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:loadbalancer/app/novagram-alb/a01debf375070e29"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available",
+            "module.security_groups.aws_security_group.alb_security_group"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.load_balancers",
+      "mode": "managed",
+      "type": "aws_lb_listener",
+      "name": "http",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "status": "tainted",
+          "schema_version": 0,
+          "attributes": {
+            "alpn_policy": null,
+            "arn": null,
+            "certificate_arn": null,
+            "default_action": [
+              {
+                "authenticate_cognito": [],
+                "authenticate_oidc": [],
+                "fixed_response": [],
+                "forward": [],
+                "jwt_validation": [],
+                "order": 0,
+                "redirect": [],
+                "target_group_arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:targetgroup/novagram-frontend-lb-tg/6a1a5a651322ab59",
+                "type": "forward"
+              }
+            ],
+            "id": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:listener/app/novagram-alb/a01debf375070e29/940cc8985713dc06",
+            "load_balancer_arn": "arn:aws:elasticloadbalancing:eu-north-1:770646238400:loadbalancer/app/novagram-alb/a01debf375070e29",
+            "mutual_authentication": null,
+            "port": 80,
+            "protocol": "HTTP",
+            "region": "eu-north-1",
+            "routing_http_request_x_amzn_mtls_clientcert_header_name": null,
+            "routing_http_request_x_amzn_mtls_clientcert_issuer_header_name": null,
+            "routing_http_request_x_amzn_mtls_clientcert_leaf_header_name": null,
+            "routing_http_request_x_amzn_mtls_clientcert_serial_number_header_name": null,
+            "routing_http_request_x_amzn_mtls_clientcert_subject_header_name": null,
+            "routing_http_request_x_amzn_mtls_clientcert_validity_header_name": null,
+            "routing_http_request_x_amzn_tls_cipher_suite_header_name": null,
+            "routing_http_request_x_amzn_tls_version_header_name": null,
+            "routing_http_response_access_control_allow_credentials_header_value": null,
+            "routing_http_response_access_control_allow_headers_header_value": null,
+            "routing_http_response_access_control_allow_methods_header_value": null,
+            "routing_http_response_access_control_allow_origin_header_value": null,
+            "routing_http_response_access_control_expose_headers_header_value": null,
+            "routing_http_response_access_control_max_age_header_value": null,
+            "routing_http_response_content_security_policy_header_value": null,
+            "routing_http_response_server_enabled": null,
+            "routing_http_response_strict_transport_security_header_value": null,
+            "routing_http_response_x_content_type_options_header_value": null,
+            "routing_http_response_x_frame_options_header_value": null,
+            "ssl_policy": null,
+            "tags": null,
+            "tags_all": null,
+            "tcp_idle_timeout_seconds": null,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsInVwZGF0ZSI6MzAwMDAwMDAwMDAwfX0=",
+          "dependencies": [
+            "module.frontend_target_group.aws_lb_target_group.novagram_tg",
+            "module.load_balancers.aws_lb.novagram_alb",
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available",
+            "module.security_groups.aws_security_group.alb_security_group"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.log_group",
+      "mode": "managed",
+      "type": "aws_cloudwatch_log_group",
+      "name": "service_logs",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "backend",
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:logs:eu-north-1:770646238400:log-group:/ecs/novagram/backend",
+            "deletion_protection_enabled": false,
+            "id": "/ecs/novagram/backend",
+            "kms_key_id": "",
+            "log_group_class": "STANDARD",
+            "name": "/ecs/novagram/backend",
+            "name_prefix": "",
+            "region": "eu-north-1",
+            "retention_in_days": 14,
+            "skip_destroy": false,
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "name": "/ecs/novagram/backend",
+            "region": "eu-north-1"
+          },
+          "private": "bnVsbA=="
+        },
+        {
+          "index_key": "frontend",
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:logs:eu-north-1:770646238400:log-group:/ecs/novagram/frontend",
+            "deletion_protection_enabled": false,
+            "id": "/ecs/novagram/frontend",
+            "kms_key_id": "",
+            "log_group_class": "STANDARD",
+            "name": "/ecs/novagram/frontend",
+            "name_prefix": "",
+            "region": "eu-north-1",
+            "retention_in_days": 14,
+            "skip_destroy": false,
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "name": "/ecs/novagram/frontend",
+            "region": "eu-north-1"
+          },
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "data",
+      "type": "aws_availability_zones",
+      "name": "available",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "all_availability_zones": null,
+            "exclude_names": null,
+            "exclude_zone_ids": null,
+            "filter": null,
+            "group_names": [
+              "eu-north-1-zg-1"
+            ],
+            "id": "eu-north-1",
+            "names": [
+              "eu-north-1a",
+              "eu-north-1b",
+              "eu-north-1c"
+            ],
+            "region": "eu-north-1",
+            "state": "available",
+            "timeouts": null,
+            "zone_ids": [
+              "eun1-az1",
+              "eun1-az2",
+              "eun1-az3"
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_internet_gateway",
+      "name": "gw",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:internet-gateway/igw-02cd0591809bafd52",
+            "id": "igw-02cd0591809bafd52",
+            "owner_id": "770646238400",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-internet-gateway"
+            },
+            "tags_all": {
+              "Name": "novagram-internet-gateway"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_route_table",
+      "name": "private",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:route-table/rtb-05252f2c4f6e53e54",
+            "id": "rtb-05252f2c4f6e53e54",
+            "owner_id": "770646238400",
+            "propagating_vgws": [],
+            "region": "eu-north-1",
+            "route": [],
+            "tags": {
+              "Name": "novagram-private-rt"
+            },
+            "tags_all": {
+              "Name": "novagram-private-rt"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "rtb-05252f2c4f6e53e54",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_route_table",
+      "name": "route_table",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:route-table/rtb-0931aeebf5e11d6ea",
+            "id": "rtb-0931aeebf5e11d6ea",
+            "owner_id": "770646238400",
+            "propagating_vgws": [],
+            "region": "eu-north-1",
+            "route": [
+              {
+                "carrier_gateway_id": "",
+                "cidr_block": "0.0.0.0/0",
+                "core_network_arn": "",
+                "destination_prefix_list_id": "",
+                "egress_only_gateway_id": "",
+                "gateway_id": "igw-02cd0591809bafd52",
+                "ipv6_cidr_block": "",
+                "local_gateway_id": "",
+                "nat_gateway_id": "",
+                "network_interface_id": "",
+                "transit_gateway_id": "",
+                "vpc_endpoint_id": "",
+                "vpc_peering_connection_id": ""
+              }
+            ],
+            "tags": {},
+            "tags_all": {},
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "rtb-0931aeebf5e11d6ea",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_internet_gateway.gw",
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "novagram_rta",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-04c8c5c14bb226250",
+            "region": "eu-north-1",
+            "route_table_id": "rtb-0931aeebf5e11d6ea",
+            "subnet_id": "subnet-017fe7d536d61e21e",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_internet_gateway.gw",
+            "module.network.aws_route_table.route_table",
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-02e438e8101af8f53",
+            "region": "eu-north-1",
+            "route_table_id": "rtb-0931aeebf5e11d6ea",
+            "subnet_id": "subnet-08a0708fffa500732",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_internet_gateway.gw",
+            "module.network.aws_route_table.route_table",
+            "module.network.aws_subnet.novagram_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "private",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-0b893a16785b5936c",
+            "region": "eu-north-1",
+            "route_table_id": "rtb-05252f2c4f6e53e54",
+            "subnet_id": "subnet-0d12b0c854d70f0c2",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_route_table.private",
+            "module.network.aws_subnet.novagram_private_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 0,
+          "attributes": {
+            "gateway_id": "",
+            "id": "rtbassoc-032fa0014bc921ad0",
+            "region": "eu-north-1",
+            "route_table_id": "rtb-05252f2c4f6e53e54",
+            "subnet_id": "subnet-08c5bb0f637887e6f",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozMDAwMDAwMDAwMDAsImRlbGV0ZSI6MzAwMDAwMDAwMDAwLCJ1cGRhdGUiOjEyMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.aws_route_table.private",
+            "module.network.aws_subnet.novagram_private_subnet",
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "novagram_private_subnet",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:subnet/subnet-0d12b0c854d70f0c2",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-north-1a",
+            "availability_zone_id": "eun1-az1",
+            "cidr_block": "10.0.3.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-0d12b0c854d70f0c2",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_ipam_pool_id": null,
+            "ipv6_native": false,
+            "ipv6_netmask_length": null,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "770646238400",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-private_subnet-1"
+            },
+            "tags_all": {
+              "Name": "novagram-private_subnet-1"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "subnet-0d12b0c854d70f0c2",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:subnet/subnet-08c5bb0f637887e6f",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-north-1b",
+            "availability_zone_id": "eun1-az2",
+            "cidr_block": "10.0.4.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-08c5bb0f637887e6f",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_ipam_pool_id": null,
+            "ipv6_native": false,
+            "ipv6_netmask_length": null,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "770646238400",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-private_subnet-2"
+            },
+            "tags_all": {
+              "Name": "novagram-private_subnet-2"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "subnet-08c5bb0f637887e6f",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "novagram_subnet",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:subnet/subnet-017fe7d536d61e21e",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-north-1a",
+            "availability_zone_id": "eun1-az1",
+            "cidr_block": "10.0.1.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-017fe7d536d61e21e",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_ipam_pool_id": null,
+            "ipv6_native": false,
+            "ipv6_netmask_length": null,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": "",
+            "owner_id": "770646238400",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-public_subnet-1"
+            },
+            "tags_all": {
+              "Name": "novagram-public_subnet-1"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "subnet-017fe7d536d61e21e",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:subnet/subnet-08a0708fffa500732",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "eu-north-1b",
+            "availability_zone_id": "eun1-az2",
+            "cidr_block": "10.0.2.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-08a0708fffa500732",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_ipam_pool_id": null,
+            "ipv6_native": false,
+            "ipv6_netmask_length": null,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": "",
+            "owner_id": "770646238400",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-public_subnet-2"
+            },
+            "tags_all": {
+              "Name": "novagram-public_subnet-2"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "subnet-08a0708fffa500732",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.network.data.aws_availability_zones.available"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "novagram_vpc",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:vpc/vpc-0291ce0a421c9bcbf",
+            "assign_generated_ipv6_cidr_block": false,
+            "cidr_block": "10.0.0.0/16",
+            "default_network_acl_id": "acl-06f91c4c49b8d7201",
+            "default_route_table_id": "rtb-07814d041411eb2fa",
+            "default_security_group_id": "sg-09c318b6c0a5d2c1d",
+            "dhcp_options_id": "dopt-00f323835bc8f5333",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "id": "vpc-0291ce0a421c9bcbf",
+            "instance_tenancy": "default",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_network_border_group": "",
+            "ipv6_ipam_pool_id": "",
+            "ipv6_netmask_length": 0,
+            "main_route_table_id": "rtb-07814d041411eb2fa",
+            "owner_id": "770646238400",
+            "region": "eu-north-1",
+            "tags": {
+              "Name": "novagram-vpc"
+            },
+            "tags_all": {
+              "Name": "novagram-vpc"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "vpc-0291ce0a421c9bcbf",
+            "region": "eu-north-1"
+          },
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.policies",
+      "mode": "data",
+      "type": "aws_caller_identity",
+      "name": "current",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "account_id": "770646238400",
+            "arn": "arn:aws:iam::770646238400:user/terraform",
+            "id": "770646238400",
+            "user_id": "AIDA3G3QYMTAEVXZ3QCW5"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.policies",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "backend_secrets_policy",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "attachment_count": 2,
+            "delay_after_policy_creation_in_ms": null,
+            "description": "",
+            "id": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy",
+            "name": "novagram-backend-secrets-policy",
+            "name_prefix": "",
+            "path": "/",
+            "policy": "{\"Statement\":[{\"Action\":[\"secretsmanager:GetSecretValue\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:secretsmanager:eu-north-1:770646238400:secret:novagram*\"}],\"Version\":\"2012-10-17\"}",
+            "policy_id": "ANPA3G3QYMTAI53FZBWXC",
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": "arn:aws:iam::770646238400:policy/novagram-backend-secrets-policy"
+          },
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.policies.data.aws_caller_identity.current"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.security_groups",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "alb_security_group",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:security-group/sg-057e282ca1a0dec43",
+            "description": "ALB SG: allow HTTP from internet",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "all outbound",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "id": "sg-057e282ca1a0dec43",
+            "ingress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "HTTP from anywhere",
+                "from_port": 80,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 80
+              }
+            ],
+            "name": "novagram-alb-sg",
+            "name_prefix": "",
+            "owner_id": "770646238400",
+            "region": "eu-north-1",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Name": "novagram-alb-sg"
+            },
+            "tags_all": {
+              "Name": "novagram-alb-sg"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "sg-057e282ca1a0dec43",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.security_groups",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "backend_security_group",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:security-group/sg-0afc7773138fc2884",
+            "description": "Backend SG: allow only from ALB SG (port 5000)",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "id": "sg-0afc7773138fc2884",
+            "ingress": [
+              {
+                "cidr_blocks": [],
+                "description": "",
+                "from_port": 5000,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [
+                  "sg-057e282ca1a0dec43"
+                ],
+                "self": false,
+                "to_port": 5000
+              }
+            ],
+            "name": "novagram-backend-sg",
+            "name_prefix": "",
+            "owner_id": "770646238400",
+            "region": "eu-north-1",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Name": "novagram-backend-sg"
+            },
+            "tags_all": {
+              "Name": "novagram-backend-sg"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "sg-0afc7773138fc2884",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.security_groups.aws_security_group.alb_security_group"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.security_groups",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "frontend_security_group",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:eu-north-1:770646238400:security-group/sg-095ed663c22f4cf42",
+            "description": "Managed by Terraform",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "id": "sg-095ed663c22f4cf42",
+            "ingress": [
+              {
+                "cidr_blocks": [],
+                "description": "",
+                "from_port": 80,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [
+                  "sg-057e282ca1a0dec43"
+                ],
+                "self": false,
+                "to_port": 80
+              }
+            ],
+            "name": "novagram-frontend-sg",
+            "name_prefix": "",
+            "owner_id": "770646238400",
+            "region": "eu-north-1",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Name": "novagram-frontend-sg"
+            },
+            "tags_all": {
+              "Name": "novagram-frontend-sg"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0291ce0a421c9bcbf"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": "770646238400",
+            "id": "sg-095ed663c22f4cf42",
+            "region": "eu-north-1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "module.network.aws_vpc.novagram_vpc",
+            "module.security_groups.aws_security_group.alb_security_group"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

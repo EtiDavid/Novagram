@@ -2,3 +2,18 @@
 **/.env*
 **/.idea
 **/build
+**/*.tfstate
+*.tfstate.backup
+.terraform/
+
+# .gitignore
+*.tfvars
+*.tfvars.json
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+*.pem
+*.key
+.env
+node_modules/
