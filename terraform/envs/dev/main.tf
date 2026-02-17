@@ -31,6 +31,7 @@ module "backend_target_group" {
   port = 5000
   protocol = "HTTP"
   service_name = "backend"
+  enable_stickiness = true
 }
 
 module "frontend_target_group" {
@@ -107,7 +108,7 @@ module "backend_ecs_service" {
   task_name = "backend"
   cluster_id = module.ecs_cluster.cluster_id
   task_definition_arn = module.backend_task_definition.task_definition_arn
-  desired_count = 2
+  desired_count = 1
   security_group_ids = [module.security_groups.backend_sg_id]
   subnet_ids = module.network.public_subnet_ids
   target_group_arn = module.backend_target_group.aws_lb_target_group_arn
