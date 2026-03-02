@@ -13,6 +13,8 @@ on:
       - main
     tags:
       - "v*"
+    paths:
+      - 'backend/**'
 
   workflow_dispatch:
 
