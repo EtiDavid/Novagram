@@ -11,13 +11,13 @@ locals {
     # Backend Service
     "ecs/backend/service-name"        = module.backend_ecs_service.service_name
     "ecs/backend/task-family"         = module.backend_task_definition.task_definition_family
-    "ecs/backend/container-name"      = "backend"
+    "ecs/backend/container-name"      = module.backend_task_definition.container_name
     "ecs/backend/target-group-arn"    = module.backend_target_group.aws_lb_target_group_arn
 
     # Frontend Service
     "ecs/frontend/service-name"       = module.frontend_ecs_service.service_name
     "ecs/frontend/task-family"        = module.frontend_task_definition.task_definition_family
-    "ecs/frontend/container-name"     = "frontend"
+    "ecs/frontend/container-name"     = module.frontend_task_definition.container_name
     "ecs/frontend/target-group-arn"   = module.frontend_target_group.aws_lb_target_group_arn
 
     # ALB

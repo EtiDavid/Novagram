@@ -243,6 +243,10 @@ jobs:
            --task-definition ${{ steps.infra.outputs.task_family }} \
            --query taskDefinition > ${{ github.workspace }}/task-definition.json
 
+     - name: debug image name
+       run: |
+          echo "image name = ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-backend.outputs.VERSION }}"
+
      
 
      - name: Render new task definition for backend
