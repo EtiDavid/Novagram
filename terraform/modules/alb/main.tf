@@ -6,7 +6,10 @@ resource "aws_lb" "novagram_alb" {
   security_groups    = var.security_groups
   subnets            = var.subnets
 
-  enable_deletion_protection = false
+  enable_deletion_protection = true
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_lb_listener" "http" {
@@ -19,8 +22,12 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = var.frontend_target_group_arn
   }
+  lifecycle {
+    prevent_destroy = true
+  }
   depends_on = [aws_lb.novagram_alb]
 }
+
 
 # /socket.io/* goes to backend
 resource "aws_lb_listener_rule" "backend_rule" {
@@ -36,5 +43,8 @@ resource "aws_lb_listener_rule" "backend_rule" {
     path_pattern {
       values = ["/socket.io/*"]
     }
+  }
+  lifecycle {
+    prevent_destroy = true
   }
 }
