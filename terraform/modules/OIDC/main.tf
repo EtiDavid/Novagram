@@ -19,8 +19,11 @@ resource "aws_iam_role" "github_actions" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:EtiDavid/novagram:*"
+          "token.actions.githubusercontent.com:sub" = "repo:EtiDavid/Novagram:*"
         }
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
       }
     }]
   })
