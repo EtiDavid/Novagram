@@ -17,11 +17,11 @@ permissions:
 
 env:
   FRONTEND_IMAGE: novagram-frontend
-  TASK_DEF_FILE_FRONTEND: Novagram-frontend.json
-  FRONTEND_CONTAINER_NAME: novagram-frontend-container
-  SERVICE_NAME_FRONTEND: Novagram-frontend-td-service
-  CLUSTER_NAME_FRONTEND: novagram-frontend-cluster
   AWS_REGION: eu-north-1
+
+concurrency:
+  group: production-deployments
+  cancel-in-progress: false
 
 jobs:
   Build-artifact:

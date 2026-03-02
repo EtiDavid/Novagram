@@ -14,10 +14,7 @@ variable "thumbprint_list" {
   type        = list(string)
 }
 
-variable "repo_name" {
-  description = "GitHub repository name pattern"
-  type        = string
-}
+
 
 # NEW: Allow custom policies to be attached
 variable "additional_policy_arns" {

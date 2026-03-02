@@ -33,6 +33,10 @@ env:
   AWS_REGION: eu-north-1
   WORKING_DIR: terraform/envs/dev
 
+concurrency:
+  group: production-deployments
+  cancel-in-progress: false
+
 jobs:
   terraform:
     runs-on: ubuntu-latest

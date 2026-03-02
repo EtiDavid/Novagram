@@ -22,7 +22,9 @@ env:
     REGISTRY: docker.io
 
 
-
+concurrency:
+  group: production-deployments
+  cancel-in-progress: false
 
 jobs:
  test-backend:
