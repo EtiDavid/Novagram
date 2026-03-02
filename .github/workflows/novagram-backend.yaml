@@ -268,27 +268,39 @@ jobs:
 
      - name: Verify deployment health
        run: |
-           echo " Checking target health..."
-           
+         echo "Waiting for target group to update health status..."
+         sleep 30    # give ALB time to update after ECS stabilizes
+
+         MAX_ATTEMPTS=10
+         ATTEMPT=0
+
+         while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+           ATTEMPT=$((ATTEMPT + 1))
+
            HEALTH_STATE=$(aws elbv2 describe-target-health \
              --target-group-arn ${{ steps.infra.outputs.target_group_arn }} \
              --query 'TargetHealthDescriptions[0].TargetHealth.State' \
              --output text)
-           
-           echo "Health status: ${HEALTH_STATE}"
-           
+
+           echo "Attempt $ATTEMPT — Health status: ${HEALTH_STATE}"
+
            if [ "${HEALTH_STATE}" == "healthy" ]; then
-             echo " Backend deployed and healthy "
-           else
-             echo " Health status: ${HEALTH_STATE}"
+             echo "Frontend deployed and healthy "
+             exit 0
+           fi
+
+           if [ "${HEALTH_STATE}" == "unhealthy" ]; then
+             echo "Target is unhealthy "
              exit 1
            fi
 
-#     - name: Download new task definition for debugging
-#       run: |
-#         aws ecs describe-task-definition \
-#           --task-definition ${{ steps.infra.outputs.task_family }} \
-#           --query taskDefinition > new-task-definition.json
+           sleep 15
+         done
+
+         echo "Timed out "
+         exit 1
+
+
       #create debug
      - name: Create debug info
        if: always()
