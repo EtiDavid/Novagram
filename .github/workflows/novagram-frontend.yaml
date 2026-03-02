@@ -252,7 +252,7 @@ jobs:
         run: |
           aws ecs describe-task-definition \
             --task-definition ${{ steps.infra.outputs.task_family }} \
-            --query taskDefinition > task-definition.json
+            --query taskDefinition > ${{ github.workspace }}/task-definition.json
 
 
 
@@ -260,7 +260,7 @@ jobs:
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: task-definition.json
+          task-definition: ${{ github.workspace }}/task-definition.json
           container-name: ${{ steps.infra.outputs.container_name }}
           image: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ needs.Build-frontend.outputs.VERSION }}
 
@@ -295,12 +295,12 @@ jobs:
       - name: Create debug info
         if: always()
         run: |
-          echo "Run ID: ${{ github.run_id }}" > debug-info.txt
-          echo "Commit: ${{ github.sha }}" >> debug-info.txt
-          echo "Branch: ${{ github.ref_name }}" >> debug-info.txt
-          echo "Task Family: ${{ steps.infra.outputs.task_family }}" >> debug-info.txt
-          echo "Timestamp: $(date)" >> debug-info.txt echo " task definition: ${{ steps.render.outputs.task-definition }} >> new-task-definition.json
-      
+          echo "Run ID: ${{ github.run_id }}" > ${{ github.workspace }}/debug-info.txt
+          echo "Commit: ${{ github.sha }}" >> ${{ github.workspace }}/debug-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> ${{ github.workspace }}/debug-info.txt
+          echo "Task Family: ${{ steps.infra.outputs.task_family }}" >> ${{ github.workspace }}/debug-info.txt
+          echo "Timestamp: $(date)" >> ${{ github.workspace }}/debug-info.txt
+          echo "Task definition: ${{ steps.render.outputs.task-definition }}" >> ${{ github.workspace }}/new-task-definition.json
 
       # upload debug
       - name: Upload debug bundle
@@ -309,7 +309,7 @@ jobs:
         with:
           name: debug-${{ github.run_number }}
           path: |
-            task-definition.json
-            new-task-definition.json
-            debug-info.txt
+            ${{ github.workspace }}/task-definition.json
+            ${{ github.workspace }}/new-task-definition.json
+            ${{ github.workspace }}/debug-info.txt
           retention-days: 7
