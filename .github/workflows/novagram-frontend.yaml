@@ -6,8 +6,8 @@ on:
       - main
     tags:
       - "v*"
-    paths:
-      - 'frontend/**'
+#    paths:
+#      - 'frontend/**'
   pull_request:
     branches:
       - main
@@ -21,9 +21,9 @@ env:
   FRONTEND_IMAGE: novagram-frontend
   AWS_REGION: eu-north-1
 
-concurrency:
-  group: production-deployments
-  cancel-in-progress: false
+#concurrency:
+#  group: production-deployments
+#  cancel-in-progress: false
 
 jobs:
   Build-artifact:
