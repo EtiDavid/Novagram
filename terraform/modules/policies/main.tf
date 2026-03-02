@@ -14,4 +14,8 @@ resource "aws_iam_policy" "backend_secrets_policy" {
 }
 
 # This gets your AWS account ID dynamically
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "current" {
+}
+
+
+

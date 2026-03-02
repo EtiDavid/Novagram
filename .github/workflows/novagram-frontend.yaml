@@ -1,0 +1,313 @@
+name: Novagram frontend
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  FRONTEND_IMAGE: novagram-frontend
+  TASK_DEF_FILE_FRONTEND: Novagram-frontend.json
+  FRONTEND_CONTAINER_NAME: novagram-frontend-container
+  SERVICE_NAME_FRONTEND: Novagram-frontend-td-service
+  CLUSTER_NAME_FRONTEND: novagram-frontend-cluster
+  AWS_REGION: eu-north-1
+
+jobs:
+  Build-artifact:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+    steps:
+      - name: get code
+        uses: actions/checkout@v4
+
+      - name: set-up node
+        uses: actions/setup-node@v5
+        with:
+         node-version: "20"
+         cache: "npm"
+         cache-dependency-path:  frontend/chat-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: build-artifact
+        run: npm run build
+
+      - name: upload- artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-files-${{ github.run_number }}
+          path: frontend/chat-frontend/build
+
+  Fetch_DNS_NAME:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: Build-artifact
+    outputs:
+      DNS_NAME: ${{ steps.infra.outputs.DNS_NAME }}
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.NOVA_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: download terraform infrastructure
+        id: infra
+        run: |
+          echo "Downloading infrastructure values from AWS SSM_parameter"
+          
+          DNS_NAME=$(aws ssm get-parameter \
+            --name /novagram/production/alb/dns-name \
+            --query 'Parameter.Value' \
+            --output text)
+          
+          echo "DNS_NAME=${DNS_NAME}" >> $GITHUB_OUTPUT
+    
+          echo " Container: ${DNS_NAME}"
+          
+  
+  
+  
+  
+
+  Build-frontend:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: Fetch_DNS_NAME
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+
+    outputs:
+      VERSION: ${{ steps.vars.outputs.VERSION }}
+      IS_RELEASE: ${{ steps.vars.outputs.IS_RELEASE }}
+    steps:
+      - name: get code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Detect version
+        id: vars
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+        
+          else
+            VERSION="dev-${GITHUB_SHA::7}" 
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+        
+          fi
+
+      - name: build docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} \
+          --build-arg REACT_APP_API_URL=http://${{ needs.Fetch_DNS_NAME.outputs.DNS_NAME }} \
+          .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }}
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+      - name: debug
+        run: docker images
+      - name: tag docker image
+        run: |
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
+          VERSION=${{ steps.vars.outputs.VERSION }}
+          
+      
+          docker tag $IMAGE:$VERSION $IMAGE:main
+          
+          if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+          docker tag $IMAGE:$VERSION $IMAGE:latest
+          fi
+
+      - name: Enforce immutable release tags
+        if: steps.vars.outputs.IS_RELEASE == 'true'
+        run: |
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}"
+          TAG="${{ steps.vars.outputs.VERSION }}"
+
+          echo "Checking if $IMAGE:$TAG already exists..."
+
+          if docker manifest inspect "$IMAGE:$TAG" > /dev/null 2>&1; then
+            echo "::error::Release tag $TAG already exists in Docker Hub. Release tags are immutable."
+            exit 1
+          fi
+
+          echo "Tag $TAG does not exist. Safe to release."
+
+      - name: Push images to registry
+        run: |
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}
+          VERSION=${{ steps.vars.outputs.VERSION }}
+          
+          docker push $IMAGE:$VERSION
+          docker push $IMAGE:main
+          
+          if [[ "${{ steps.vars.outputs.IS_RELEASE }}" == "true" ]]; then
+            docker push $IMAGE:latest
+          fi
+          
+
+  deploy-frontend-aws:
+    needs: Build-frontend
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: frontend/chat-frontend
+    if: ${{ needs.Build-frontend.outputs.IS_RELEASE == 'true' }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.NOVA_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: eu-north-1
+      # get infrastructure values from AWS SSM_parameter
+      - name: Get infrastructure parameters from Terraform
+        id: infra
+        run: |
+          echo "Downloading infrastructure values from AWS SSM_parameter"
+
+          CLUSTER_NAME=$(aws ssm get-parameter \
+            --name /novagram/production/ecs/cluster-name \
+            --query 'Parameter.Value' \
+            --output text)
+
+          SERVICE_NAME=$(aws ssm get-parameter \
+             --name /novagram/production/ecs/frontend/service-name \
+             --query 'Parameter.Value' \
+             --output text)
+
+           TASK_FAMILY=$(aws ssm get-parameter \
+             --name /novagram/production/ecs/frontend/task-family \
+             --query 'Parameter.Value' \
+             --output text)
+
+           CONTAINER_NAME=$(aws ssm get-parameter \
+             --name /novagram/production/ecs/frontend/container-name \
+             --query 'Parameter.Value' \
+             --output text)
+
+           TG_ARN=$(aws ssm get-parameter \
+             --name /novagram/production/ecs/frontend/target-group-arn \
+             --query 'Parameter.Value' \
+             --output text)
+
+          # Export infrastructure values to Github outputs
+           echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+           echo "service_name=${SERVICE_NAME}" >> $GITHUB_OUTPUT
+           echo "task_family=${TASK_FAMILY}" >> $GITHUB_OUTPUT
+           echo "container_name=${CONTAINER_NAME}" >> $GITHUB_OUTPUT
+           echo "target_group_arn=${TG_ARN}" >> $GITHUB_OUTPUT
+
+           # Logs for debugging values
+           echo " Cluster: ${CLUSTER_NAME}"
+           echo " Service: ${SERVICE_NAME}"
+           echo " Task Family: ${TASK_FAMILY}"
+           echo " Container: ${CONTAINER_NAME}"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ steps.infra.outputs.task_family }} \
+            --query taskDefinition > task-definition.json
+
+
+
+      - name: Render new task definition for frontend
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ steps.infra.outputs.container_name }}
+          image: ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ needs.Build-frontend.outputs.VERSION }}
+
+
+      - name: Deploy backend to Amazon ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          service: ${{ steps.infra.outputs.service_name }}
+          cluster: ${{ steps.infra.outputs.cluster_name }}
+          wait-for-service-stability: true
+
+      - name: Verify deployment health
+        run: |
+          echo " Checking target health..."
+          
+          HEALTH_STATE=$(aws elbv2 describe-target-health \
+            --target-group-arn ${{ steps.infra.outputs.target_group_arn }} \
+            --query 'TargetHealthDescriptions[0].TargetHealth.State' \
+            --output text)
+          
+          echo "Health status: ${HEALTH_STATE}"
+          
+          if [ "${HEALTH_STATE}" == "healthy" ]; then
+            echo " Backend deployed and healthy "
+          else
+            echo " Health status: ${HEALTH_STATE}"
+            exit 1
+          fi
+
+      #create debug
+      - name: Create debug info
+        if: always()
+        run: |
+          echo "Run ID: ${{ github.run_id }}" > debug-info.txt
+          echo "Commit: ${{ github.sha }}" >> debug-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> debug-info.txt
+          echo "Task Family: ${{ steps.infra.outputs.task_family }}" >> debug-info.txt
+          echo "Timestamp: $(date)" >> debug-info.txt echo " task definition: ${{ steps.render.outputs.task-definition }} >> new-task-definition.json
+      
+
+      # upload debug
+      - name: Upload debug bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-${{ github.run_number }}
+          path: |
+            task-definition.json
+            new-task-definition.json
+            debug-info.txt
+          retention-days: 7

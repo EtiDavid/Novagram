@@ -5,24 +5,22 @@ permissions:  #for aws
   contents: read
 
 on:
-  #pull_request:
-    #branches:
-     # - main
-  #push:
-    #branches:
-      #- main
-    #tags:
-      #- "v*"
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
 
   workflow_dispatch:
+
 
 env:
     BACKEND_IMAGE: novagram-backend
     REGISTRY: docker.io
-    TASK_DEF_FILE_BACKEND: Novagram-backend.json
-    BACKEND_CONTAINER_NAME: novagram-backend-container
-    SERVICE_NAME_BACKEND: Novagram-backend-td-service
-    CLUSTER_NAME_BACKEND: novagram-backend-cluster
+
 
 
 
@@ -33,7 +31,7 @@ jobs:
    defaults:
      run:
        working-directory: backend
-
+  # using mongo github service for the test
    services:
      mongo:
       image: mongo:6
@@ -125,10 +123,8 @@ jobs:
         docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} .
          
 
-     #- name: Debug dependencies
-       #run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} npm list cross-spawn glob
 
-
+       # testing with trivy
      - name: Scan image with Trivy
        uses: aquasecurity/trivy-action@0.20.0
        with:
@@ -191,24 +187,120 @@ jobs:
      - name: Configure AWS credentials
        uses: aws-actions/configure-aws-credentials@v4
        with:
-         role-to-assume: arn:aws:iam::100067510402:role/github-actions-novagram-deployer
+         role-to-assume: ${{ secrets.NOVA_GITHUB_ACTIONS_ROLE_ARN }}
          aws-region: eu-north-1
+     # get infrastructure values from AWS SSM_parameter
+     - name: Get infrastructure parameters from Terraform
+       id: infra
+       run: |
+         echo "Downloading infrastructure values from AWS SSM_parameter"
+         
+         CLUSTER_NAME=$(aws ssm get-parameter \
+           --name /novagram/production/ecs/cluster-name
+           --query 'Parameter.Value' \
+           --output text)
+         
+         SERVICE_NAME=$(aws ssm get-parameter \
+            --name /novagram/production/ecs/backend/service-name \
+            --query 'Parameter.Value' \
+            --output text)
+         
+          TASK_FAMILY=$(aws ssm get-parameter \
+            --name /novagram/production/ecs/backend/task-family \
+            --query 'Parameter.Value' \
+            --output text)
+         
+          CONTAINER_NAME=$(aws ssm get-parameter \
+            --name /novagram/production/ecs/backend/container-name \
+            --query 'Parameter.Value' \
+            --output text)
+         
+          TG_ARN=$(aws ssm get-parameter \
+            --name /novagram/production/ecs/backend/target-group-arn \
+            --query 'Parameter.Value' \
+            --output text)
+         
+         # Export infrastructure values to Github outputs
+          echo "cluster_name=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+          echo "service_name=${SERVICE_NAME}" >> $GITHUB_OUTPUT
+          echo "task_family=${TASK_FAMILY}" >> $GITHUB_OUTPUT
+          echo "container_name=${CONTAINER_NAME}" >> $GITHUB_OUTPUT
+          echo "target_group_arn=${TG_ARN}" >> $GITHUB_OUTPUT
+         
+          # Logs for debugging values
+          echo "✅ Cluster: ${CLUSTER_NAME}"
+          echo "✅ Service: ${SERVICE_NAME}"
+          echo "✅ Task Family: ${TASK_FAMILY}"
+          echo "✅ Container: ${CONTAINER_NAME}"
 
+     - name: Download current task definition
+       run: |
+         aws ecs describe-task-definition \
+           --task-definition ${{ steps.infra.outputs.task_family }} \
+           --query taskDefinition > task-definition.json
+
+     
 
      - name: Render new task definition for backend
-       id: backend_render
+       id: render
        uses: aws-actions/amazon-ecs-render-task-definition@v1
        with:
-         task-definition: ${{ env.TASK_DEF_FILE_BACKEND }}
-         container-name: ${{ env.BACKEND_CONTAINER_NAME }}
+         task-definition: task-definition.json
+         container-name: ${{ steps.infra.outputs.container_name }}
          image: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-backend.outputs.VERSION }}
 
 
      - name: Deploy backend to Amazon ECS service
        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
        with:
-         task-definition: ${{ steps.backend_render.outputs.task-definition }}
-         service: ${{ env.SERVICE_NAME_BACKEND }}
-         cluster: ${{ env.CLUSTER_NAME_BACKEND }}
+         task-definition: ${{ steps.render.outputs.task-definition }}
+         service: ${{ steps.infra.outputs.service_name }}
+         cluster: ${{ steps.infra.outputs.cluster_name }}
          wait-for-service-stability: true
 
+     - name: Verify deployment health
+       run: |
+           echo " Checking target health..."
+           
+           HEALTH_STATE=$(aws elbv2 describe-target-health \
+             --target-group-arn ${{ steps.infra.outputs.target_group_arn }} \
+             --query 'TargetHealthDescriptions[0].TargetHealth.State' \
+             --output text)
+           
+           echo "Health status: ${HEALTH_STATE}"
+           
+           if [ "${HEALTH_STATE}" == "healthy" ]; then
+             echo " Backend deployed and healthy "
+           else
+             echo " Health status: ${HEALTH_STATE}"
+             exit 1
+           fi
+
+#     - name: Download new task definition for debugging
+#       run: |
+#         aws ecs describe-task-definition \
+#           --task-definition ${{ steps.infra.outputs.task_family }} \
+#           --query taskDefinition > new-task-definition.json
+      #create debug
+     - name: Create debug info
+       if: always()
+       run: |
+         echo "Run ID: ${{ github.run_id }}" > debug-info.txt
+         echo "Commit: ${{ github.sha }}" >> debug-info.txt
+         echo "Branch: ${{ github.ref_name }}" >> debug-info.txt
+         echo "Task Family: ${{ steps.infra.outputs.task_family }}" >> debug-info.txt
+         echo "Timestamp: $(date)" >> debug-info.txt
+         echo " task definition: ${{ steps.render.outputs.task-definition }} >> new-task-definition.json
+      
+
+      # upload debug
+     - name: Upload debug bundle
+       if: always()
+       uses: actions/upload-artifact@v4
+       with:
+         name: debug-${{ github.run_number }}
+         path: |
+           task-definition.json
+           new-task-definition.json
+           debug-info.txt
+         retention-days: 7

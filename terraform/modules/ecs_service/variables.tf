@@ -16,7 +16,7 @@ variable "task_definition_arn" {
 
 variable "desired_count" {
   type    = number
-  default = 1
+  default = 0
 }
 
 variable "security_group_ids" {

@@ -50,9 +50,9 @@ resource "aws_ecs_service" "ecs_service" {
 
   wait_for_steady_state = true
 
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
+  # lifecycle {
+  #   ignore_changes = [desired_count]
+  # }
 
   tags = {
     Name = "${var.name}-${var.task_name}-service"

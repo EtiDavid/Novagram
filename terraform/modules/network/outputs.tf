@@ -21,3 +21,4 @@ output "private_route_table_id" {
 output "igw" {
   value = aws_internet_gateway.gw.id
 }
+

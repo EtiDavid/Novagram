@@ -22,10 +22,10 @@ resource "aws_lb_listener" "http" {
   depends_on = [aws_lb.novagram_alb]
 }
 
-# /api/* goes to backend
+# /socket.io/* goes to backend
 resource "aws_lb_listener_rule" "backend_rule" {
   listener_arn = aws_lb_listener.http.arn
-  priority     = 10
+  priority     = 1
 
   action {
     type             = "forward"
@@ -34,7 +34,7 @@ resource "aws_lb_listener_rule" "backend_rule" {
 
   condition {
     path_pattern {
-      values = ["/api/*"]
+      values = ["/socket.io/*"]
     }
   }
 }

@@ -7,4 +7,11 @@ resource "aws_lb_target_group" "novagram_tg" {
   health_check {
     path =  var.health_check
   }
+
+  stickiness {
+    type            = "lb_cookie"
+    enabled         = var.enable_stickiness
+    cookie_duration = var.cookie_duration
+  }
+
 }

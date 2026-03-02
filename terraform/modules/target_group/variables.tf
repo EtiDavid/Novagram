@@ -15,6 +15,16 @@ variable "port" {
   type = number
 }
 
+variable "cookie_duration" {
+  type = number
+  default = 86400
+}
+
+variable "enable_stickiness" {
+  type = bool
+  default = false
+}
+
 variable "protocol" {
   type = string
 }
