@@ -60,6 +60,10 @@ resource "aws_route_table_association" "novagram_rta" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.novagram_vpc.id
 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
 
   tags = {
     Name = "${var.name}-private-rt"

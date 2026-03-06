@@ -13,8 +13,8 @@ on:
       - main
     tags:
       - "v*"
-#    paths:
-#      - 'backend/**'
+    paths:
+      - 'backend/**'
 
   workflow_dispatch:
 
