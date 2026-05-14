@@ -112,7 +112,7 @@ async function broadcastPresence() {
   io.emit("presence_update", statuses);
 }
 
-setInterval(async () => {
+const presenceInterval = setInterval(async () => {
   const now = Date.now();
   for (const [username, data] of presenceMap.entries()) {
     if (data.status === "online" && now - data.lastActive > AWAY_AFTER) {
@@ -565,4 +565,4 @@ io.on("connection", socket => {
   });
 });
 
-module.exports = { app, server };
+module.exports = { app, server, presenceInterval };

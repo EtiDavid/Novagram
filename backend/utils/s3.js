@@ -1,6 +1,6 @@
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 
 const s3 = new S3Client({ region: process.env.AWS_REGION || "eu-west-1" });
 const BUCKET = process.env.S3_AVATAR_BUCKET;
@@ -19,7 +19,7 @@ async function getPresignedUploadUrl(username, contentType) {
   if (!BUCKET) throw new Error("S3_AVATAR_BUCKET not configured");
 
   const ext      = contentType === "image/png" ? "png" : "jpg";
-  const key      = `avatars/${username}/${uuidv4()}.${ext}`;
+  const key = `avatars/${username}/${randomUUID()}.${ext}`;
   const command  = new PutObjectCommand({
     Bucket:      BUCKET,
     Key:         key,
