@@ -62,7 +62,7 @@ if (REDIS_HOST) {
   }
 }
 
-// ─── DATABASE ───────────────────────────────────────────────────
+// ─── DATABASE  ───────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
   .then(() => logger.info("DB_CONNECTED", { host: mongoose.connection.host }))
   .catch(err => { logger.error("DB_ERROR", { error: err.message }); process.exit(1); });
