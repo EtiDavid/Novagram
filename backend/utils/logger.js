@@ -1,47 +1,24 @@
-// utils/logger.js
-const { createLogger, format, transports } = require("winston");
-const { randomUUID } = require("crypto");
+const winston = require("winston");
 
-
-const env = process.env.NODE_ENV || "development";
-const baseLevel = env === "development" ? "debug" : "info";
-const logLevel = process.env.LOG_LEVEL || baseLevel;
-
-// JSON log format, good for production / log aggregators
-const jsonFormat = format.printf(({ level, message, timestamp, requestId, ...meta }) => {
-  return JSON.stringify({
-    timestamp,
-    level,
-    message,
-    requestId,
-    ...meta
-  });
-});
-
-const logger = createLogger({
-  level: logLevel,
-  format: format.combine(
-    format.timestamp(),
-    format.errors({ stack: true }),
-    jsonFormat
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
   ),
-  transports: [
-    new transports.Console()
-  ]
+  transports: [new winston.transports.Console()]
 });
 
-// Express middleware – adds correlation ID and logs incoming HTTP requests
 function requestLogger(req, res, next) {
-  const requestId = randomUUID();
-  req.requestId = requestId;
-
-  logger.info("HTTP_REQUEST", {
-    requestId,
-    method: req.method,
-    path: req.path,
-    ip: req.ip
+  const start = Date.now();
+  res.on("finish", () => {
+    logger.info("HTTP_REQUEST", {
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      duration_ms: Date.now() - start
+    });
   });
-
   next();
 }
 
