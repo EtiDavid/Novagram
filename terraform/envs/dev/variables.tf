@@ -36,17 +36,7 @@ variable "backend_environment" {
     {
       name  = "PORT"
       value = "5000"
-    },
-
-    {
-      name  = "REDIS_HOST"
-      value = module.elasticache_cluster.redis_endpoint
-    },
-    {
-      name  = "REDIS_PORT"
-      value = "6379"
     }
-
   ]
 }
 

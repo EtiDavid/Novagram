@@ -125,8 +125,20 @@ module "backend_task_definition" {
   execution_role_arn = module.iam_execution_role.task_execution_role_arn
   log_group_name     = module.log_group.log_group_names["backend"]
   aws_region         = var.aws_region
-  environment        = var.backend_environment
   secrets            = var.backend_secrets
+  environment = concat(
+    var.backend_environment,
+    [
+      {
+        name  = "REDIS_HOST"
+        value = module.elasticache_cluster.redis_endpoint
+      },
+      {
+        name  = "REDIS_PORT"
+        value = "6379"
+      }
+    ]
+  )
 }
 
 module "backend_ecs_service" {

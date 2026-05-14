@@ -32,6 +32,8 @@ resource "aws_ecs_task_definition" "task_definition" {
       }
 
       environment = var.environment
+
+
       secrets     = var.secrets
     }
   ])
