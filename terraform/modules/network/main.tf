@@ -22,6 +22,7 @@ tags = {
   }
 }
 
+
 resource "aws_subnet" "novagram_private_subnet" {
   count = length(var.private_subnet_cidr)
   vpc_id     = aws_vpc.novagram_vpc.id
@@ -59,12 +60,6 @@ resource "aws_route_table_association" "novagram_rta" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.novagram_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gw.id
-  }
-
   tags = {
     Name = "${var.name}-private-rt"
   }
@@ -76,3 +71,9 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
+
+
+resource "aws_elasticache_subnet_group" "redis" {
+  name = "${var.name}-redis-subnet-group"
+  subnet_ids = aws_subnet.novagram_private_subnet[*].id
+}

@@ -22,3 +22,7 @@ output "igw" {
   value = aws_internet_gateway.gw.id
 }
 
+
+output "elasticache_subnet_group_name" {
+  value = aws_elasticache_subnet_group.redis.name
+}

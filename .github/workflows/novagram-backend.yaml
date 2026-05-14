@@ -1,6 +1,6 @@
 name: Novagram-backend-ci
 
-permissions:  #for aws
+permissions:  #allows GitHub to generate the JWT
   id-token: write
   contents: read
 

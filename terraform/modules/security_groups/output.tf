@@ -9,3 +9,7 @@ output "backend_sg_id" {
 output "frontend_sg_id" {
   value = aws_security_group.frontend_security_group.id
 }
+
+output "elasticache_sg_id" {
+  value = aws_security_group.elasticache_security_group.id
+}
