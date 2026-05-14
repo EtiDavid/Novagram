@@ -5,33 +5,39 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: novalite/novagram-backend
+
+    image: davidchimere-test/novagram-backend
+
     ports:
       - "5000:5000"
+
     env_file:
       - ./backend/.env.development
+
     environment:
       NODE_ENV: development
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
 
+    restart: unless-stopped
+
+    depends_on:
+      redis:
+        condition: service_started
 
   frontend:
     build:
       context: ./frontend/chat-frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL:
-           http://novagram-alb-861956009.eu-north-1.elb.amazonaws.com
-    image: davidchimere/novagram-frontend
+        REACT_APP_API_URL: http://localhost:5000
+
+    image: davidchimere-test/novagram-frontend
+
     ports:
       - "80:80"
 
-#    depends_on:
-#      backend:
-#        condition: service_healthy
-#    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: novagram-redis
+
+    ports:
+      - "6379:6379"
