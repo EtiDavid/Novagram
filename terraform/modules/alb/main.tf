@@ -48,3 +48,24 @@ resource "aws_lb_listener_rule" "backend_rule" {
     prevent_destroy = true
   }
 }
+
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 2
+
+  action {
+    type             = "forward"
+    target_group_arn = var.backend_target_group_arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+  lifecycle {
+    prevent_destroy = true
+  }
+  }
+
+}
