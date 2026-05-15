@@ -1,3 +1,5 @@
+process.env.NODE_ENV = "test";
+
 const request  = require("supertest");
 const mongoose = require("mongoose");
 
@@ -12,8 +14,12 @@ beforeAll(done => {
 });
 
 afterAll(async () => {
-  clearInterval(presenceInterval);
+  if (presenceInterval) {
+    clearInterval(presenceInterval);
+  }
+
   await new Promise(resolve => server.close(resolve));
+
   await mongoose.connection.close(true);
 });
 

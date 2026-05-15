@@ -237,23 +237,23 @@ function touchActivity(username) {
   }
 }
 
-setInterval(async () => {
+let presenceInterval;
 
-  const now = Date.now();
+if (process.env.NODE_ENV !== "test") {
+  presenceInterval = setInterval(async () => {
 
-  for (const [username, data] of presenceMap.entries()) {
+    const now = Date.now();
 
-    if (
-        data.status === "online" &&
-        now - data.lastActive > AWAY_AFTER
-    ) {
-      await setPresence(username, "away");
+    for (const [username, data] of presenceMap.entries()) {
+      if (data.status === "online" && now - data.lastActive > AWAY_AFTER) {
+        await setPresence(username, "away");
+      }
     }
-  }
 
-  await broadcastPresence();
+    await broadcastPresence();
 
-}, 60 * 1000);
+  }, 60 * 1000);
+}
 
 // ─────────────────────────────────────────────────────────────
 // ADMIN ROOM SYNC
