@@ -64,8 +64,8 @@ if (REDIS_HOST) {
 
 // ─── DATABASE  ───────────────────────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => logger.info("DB_CONNECTED", { host: mongoose.connection.host }))
-  .catch(err => { logger.error("DB_ERROR", { error: err.message }); process.exit(1); });
+    .then(() => logger.info("DB_CONNECTED", { host: mongoose.connection.host }))
+    .catch(err => { logger.error("DB_ERROR", { error: err.message }); process.exit(1); });
 
 // ─── HEALTH ─────────────────────────────────────────────────────
 app.get("/health", async (_, res) => {
@@ -191,12 +191,30 @@ io.on("connection", socket => {
       userSockets.get(cleanName).add(socket.id);
       userSessions.set(socket.id, cleanName);
 
-      // Admin auto-joins ALL rooms; regular user joins their groups
+      // ── ROOM + DM JOINS ──────────────────────────────────────
+      // Admin auto-joins ALL rooms and ALL possible DM rooms
+      // Regular user joins their groups + pre-joins DM rooms with contacts
+      // Pre-joining DM rooms ensures messages arrive instantly across ECS tasks
+      // without requiring the user to open the DM conversation first
       let effectiveGroups = user.groups;
       if (user.isAdmin) {
         effectiveGroups = await syncAdminRooms(cleanName, socket);
+        // Admin pre-joins DM rooms with every user so they can message anyone instantly
+        const allUsers = await User.find({}, "username").lean();
+        for (const u of allUsers) {
+          if (u.username !== cleanName) {
+            socket.join(`dm:${dmKey(cleanName, u.username)}`);
+          }
+        }
       } else {
         for (const g of user.groups) socket.join(g);
+        // Pre-join DM rooms with existing contacts
+        // This is the critical fix for cross-task DM delivery:
+        // Without this, DM rooms only exist on the task the user first sends/opens a DM on.
+        // With this, the Redis adapter can broadcast to the correct socket on any task.
+        for (const contact of user.contacts) {
+          socket.join(`dm:${dmKey(cleanName, contact)}`);
+        }
       }
 
       await setPresence(cleanName, "online");
@@ -211,7 +229,7 @@ io.on("connection", socket => {
       });
 
       const history = await Message.find({ room: "global", pending: false })
-        .sort({ createdAt: 1 }).limit(100);
+          .sort({ createdAt: 1 }).limit(100);
       socket.emit("chat_history", { room: "global", messages: history });
 
       for (const contact of user.contacts) {
@@ -293,15 +311,21 @@ io.on("connection", socket => {
         username: socket.username, text, dmKey: key, pending, status: "sent"
       });
 
+      // Ensure sender is in the DM room on this task
       socket.join(`dm:${key}`);
 
       if (!pending) {
+        // Also ensure recipient sockets are in the DM room on this task
+        // (they may already be joined on their own task via the login pre-join,
+        //  but we join here too in case they are on the same task)
         const recipientSocks = userSockets.get(to);
         if (recipientSocks && recipientSocks.size > 0) {
           recipientSocks.forEach(sid => {
             const s = io.sockets.sockets.get(sid);
             if (s) s.join(`dm:${key}`);
           });
+          // io.to() broadcasts via Redis adapter to all tasks — recipient receives
+          // on their task because they pre-joined this room on login
           io.to(`dm:${key}`).emit("new_dm", saved.toObject());
           await Message.updateOne({ _id: saved._id }, { status: "delivered" });
           const senderSocks = userSockets.get(socket.username);
@@ -311,6 +335,7 @@ io.on("connection", socket => {
             }));
           }
         } else {
+          // Recipient offline — emit only to sender (single tick)
           socket.emit("new_dm", saved.toObject());
         }
       } else {
@@ -328,8 +353,8 @@ io.on("connection", socket => {
     });
     for (const msg of unread) {
       await Message.updateOne(
-        { _id: msg._id },
-        { $addToSet: { seenBy: socket.username }, status: "read" }
+          { _id: msg._id },
+          { $addToSet: { seenBy: socket.username }, status: "read" }
       );
       const senderSocks = userSockets.get(msg.username);
       if (senderSocks) {
@@ -357,7 +382,7 @@ io.on("connection", socket => {
     const cleanRoom = roomName.trim().toLowerCase();
     socket.join(cleanRoom);
     const history = await Message.find({ room: cleanRoom, pending: false })
-      .sort({ createdAt: 1 }).limit(100);
+        .sort({ createdAt: 1 }).limit(100);
     socket.emit("chat_history", { room: cleanRoom, messages: history });
   });
 
@@ -365,7 +390,6 @@ io.on("connection", socket => {
   socket.on("send_contact_request", async ({ to }) => {
     if (!requireLogin()) return;
     try {
-      // Admin gets instant access — no request needed
       if (socket.isAdmin) {
         await User.updateOne({ username: socket.username }, { $addToSet: { contacts: to } });
         await User.updateOne({ username: to },             { $addToSet: { contacts: socket.username } });
@@ -408,12 +432,21 @@ io.on("connection", socket => {
       logger.info("CONTACT_ACCEPTED", { by: socket.username, from });
       socket.emit("contact_accepted", { username: from });
 
+      // Both users are now contacts — join the DM room on this task immediately
+      // so future messages work without requiring a page refresh
+      const key = dmKey(socket.username, from);
+      socket.join(`dm:${key}`);
+
+      // Also join the DM room on the sender's task
       const senderSocks = userSockets.get(from);
       if (senderSocks) {
-        senderSocks.forEach(sid => io.to(sid).emit("contact_accepted", { username: socket.username }));
+        senderSocks.forEach(sid => {
+          const s = io.sockets.sockets.get(sid);
+          if (s) s.join(`dm:${key}`);
+          io.to(sid).emit("contact_accepted", { username: socket.username });
+        });
       }
 
-      const key     = dmKey(socket.username, from);
       const pending = await Message.find({ dmKey: key, pending: true });
       for (const msg of pending) {
         await Message.updateOne({ _id: msg._id }, { pending: false, status: "delivered" });
@@ -433,7 +466,7 @@ io.on("connection", socket => {
   // ─── GROUP REQUEST — admin skips ──────────────────────────────
   socket.on("request_group_join", async ({ groupName }) => {
     if (!requireLogin()) return;
-    if (socket.isAdmin) return; // admin already in all groups
+    if (socket.isAdmin) return;
 
     try {
       const cleanName = groupName.trim().toLowerCase();
@@ -496,7 +529,6 @@ io.on("connection", socket => {
     const cleanName = name.trim().toLowerCase();
     await Room.create({ name: cleanName, createdBy: socket.username });
 
-    // Auto-add all admins to the new room
     const admins = await User.find({ isAdmin: true }, "username");
     for (const admin of admins) {
       await User.updateOne({ username: admin.username }, { $addToSet: { groups: cleanName } });
