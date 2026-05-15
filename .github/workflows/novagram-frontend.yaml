@@ -135,7 +135,7 @@ jobs:
       - name: build docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} \
-          --build-arg NGINX_CONF=default.prod.conf
+          --build-arg NGINX_CONF=default.prod.conf \
           .
 
       - name: Scan image with Trivy
