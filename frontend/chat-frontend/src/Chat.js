@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { socket } from "./socket";
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
+// const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API = "/api";
 
 // ─── COLOUR PALETTE ──────────────────────────────────────────────
 const C = {
@@ -107,13 +108,13 @@ function AvatarUpload({ user, onUpdate }) {
     if (file.size > 2 * 1024 * 1024) return alert("Max 2MB");
     setUploading(true);
     try {
-      const r1  = await fetch(`${API}/api/avatar/presign`, {
+      const r1  = await fetch(`${API}/avatar/presign`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: user.username, contentType: file.type })
       });
       const { uploadUrl, publicUrl } = await r1.json();
       await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-      await fetch(`${API}/api/avatar`, {
+      await fetch(`${API}/avatar`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: user.username, avatarUrl: publicUrl })
       });
@@ -314,7 +315,7 @@ function SearchUsers({ me, contacts, pendingContacts, onAdd, onClose, presence }
   useEffect(() => {
     if (!q.trim()) return setResults([]);
     const t = setTimeout(async () => {
-      const res  = await fetch(`${API}/api/users/search?q=${encodeURIComponent(q)}&me=${me}`);
+      const res  = await fetch(`${API}/users/search?q=${encodeURIComponent(q)}&me=${me}`);
       const data = await res.json();
       setResults(data);
     }, 300);
@@ -444,7 +445,7 @@ export default function Chat({ user: initialUser, onLogout }) {
 
   // Fetch all users
   useEffect(() => {
-    fetch(`${API}/api/users`)
+    fetch(`${API}/users`)
         .then(r => r.json())
         .then(data => setAllUsers(data.filter(u => u.username !== user.username)))
         .catch(() => {});

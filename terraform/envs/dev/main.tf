@@ -49,7 +49,7 @@ module "backend_target_group" {
   port = 5000
   protocol = "HTTP"
   service_name = "backend"
-  enable_stickiness = true
+  enable_stickiness = false
 }
 
 module "frontend_target_group" {
