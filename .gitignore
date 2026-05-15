@@ -16,3 +16,4 @@
 *.key
 .env
 node_modules/
+**/.file
