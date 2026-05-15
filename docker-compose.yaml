@@ -27,8 +27,8 @@ services:
     build:
       context: ./frontend/chat-frontend
       dockerfile: Dockerfile
-#      args:
-#        REACT_APP_API_URL: http://localhost:5000
+      args:
+          NGINX_CONF: default.dev.conf
 
     image: davidchimere-test/novagram-frontend
 

@@ -135,7 +135,7 @@ jobs:
       - name: build docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.VERSION }} \
-          --build-arg REACT_APP_API_URL=http://${{ needs.Fetch_DNS_NAME.outputs.DNS_NAME }} \
+          --build-arg NGINX_CONF=default.prod.conf
           .
 
       - name: Scan image with Trivy
